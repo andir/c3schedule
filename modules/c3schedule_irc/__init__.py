@@ -78,6 +78,10 @@ def setup(bot):
 
     bot.memory['c3schedule'] = None
     bot.memory['c3schedule_current_tracks'] = {}
+
+    # FIXME: remove this after initial development phase (pre 33c3)
+    bot.memory['c3schedule_fake_date'] = parse_date('2015-12-27')
+
     setup_database(bot.db)
 
     refresh_schedule(bot)
