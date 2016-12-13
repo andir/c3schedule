@@ -1,0 +1,4 @@
+-e git+https://github.com/andir/sopel.git#egg=sopel
+requests
+python-dateutil
+pendulum

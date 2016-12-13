@@ -1,0 +1,8 @@
+.idea
+sopel.conf 
+__pycache__
+sopel.db
+*.pid
+.idea
+logs/*
+env/*
