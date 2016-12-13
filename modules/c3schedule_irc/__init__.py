@@ -232,7 +232,9 @@ def subscribe_to_session(bot, trigger):
         add_nick_to_session_id(bot.db, trigger.account, session.id)
         bot.say('You are now subscribed to {} ({})'.format(session.title, session.id))
         if session.date < get_now(bot):
-            bot.say('The session is in the past. You might not get any notifications about this one. Check the fahrplan at {}'.format(session.url(bot)))
+            bot.say(
+                'The session is in the past. You might not get any notifications about this one. Check the fahrplan at {}'.format(
+                    session.url(bot)))
 
 
 @sopel.module.commands('unsubscribe')
@@ -653,11 +655,11 @@ class Schedule:
         for day in self.conference.days:
             for room_name, room in day.rooms.items():
                 for session_id, session in room.sessions.items():
-                        yield session
+                    yield session
 
     def search_sessions(self, search_string, max_results=10):
         search_string = search_string.lower()
-        sessions =[]
+        sessions = []
         for session in self._isessions():
             if search_string in session.title.lower() or search_string in str(session.persons).lower():
                 sessions.append(session)
@@ -750,4 +752,4 @@ class AnnoucementScheduler:
         self.timers[session.id] = ss
         ss.start()
         logger.info('Scheduled announcers for session.id {}. Start annoucement in {}'.format(session.id, (
-        session.date - now).seconds))
+            session.date - now).seconds))
