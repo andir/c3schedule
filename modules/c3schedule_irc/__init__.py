@@ -20,7 +20,7 @@ class ScheduleConfigSection(StaticSection):
     session_url = ValidatedAttribute('session_url',
                                      default='https://events.ccc.de/congress/{year}/Fahrplan/events/{id}.html')
     topic_template = ValidatedAttribute('topic_template',
-                                        default='{acronym} - {title} | {start} -> {end} | Day {dayN} | Query c3schedule with .help/.subscribe/.unsubscribe/.info')
+                                        default='{acronym} - {title} | {start} -> {end} | Day {dayN} | Query c3schedule with .help/.subscribe/.unsubscribe/.info/.schedule')
     channel = ValidatedAttribute('channel', default="#33c3-schedule")
 
 
@@ -130,6 +130,32 @@ def show_help(bot, trigger):
         sopel.formatting.CONTROL_BOLD + ".subscribe <id>" + sopel.formatting.CONTROL_NORMAL + " ‒ Subscribe to a session. This will enable notifications. (Reminders, Changes)")
     bot.say(
         sopel.formatting.CONTROL_BOLD + '.unsubscribe <id>' + sopel.formatting.CONTROL_NORMAL + "  ‒ Unsubscribe from a session. Using ALL as id will remove all sessions.")
+    bot.say(
+        sopel.formatting.CONTROL_BOLD + '.schedule' + sopel.formatting.CONTROL_NORMAL + "  ‒ View your personal (upcoming) schedule."
+    )
+
+@sopel.module.commands('schedule')
+@sopel.module.require_privmsg()
+@require_account(message='You can only via your personal schedule with a nickserv account')
+def show_personal_schedule(bot, trigger):
+    session_ids = get_account_sesssions(bot.db, trigger.account)
+
+    if not session_ids:
+        bot.say('You are not subscribed to any sessions yet.')
+        return
+
+    # resolve sessions to objects
+    schedule = bot.memory['c3schedule']
+    sessions = [schedule.get_session(session_id) for session_id in session_ids]
+
+    now = get_now(bot)
+    sessions = [session for session in sessions if session.date >= now or session.date + session.duration >= now]
+    sessions = sorted(sessions, key=lambda session: session.date)
+
+    bot.say('Your personal (upcoming) schedule:')
+
+    for session in sessions:
+        bot.say(session.format_summary())
 
 
 @sopel.module.commands('info')
@@ -137,7 +163,7 @@ def show_help(bot, trigger):
 def show_info(bot, trigger):
     try:
         session_id = int(trigger.group(3))
-    except (IndexError, ValueError):
+    except (IndexError, TypeError):
         bot.say('Usage: .info <id>')
     else:
         session = bot.memory['c3schedule'].get_session(session_id)
