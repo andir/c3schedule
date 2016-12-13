@@ -214,7 +214,7 @@ def unsubscribe_from_session(bot, trigger):
         session_id = trigger.group(3).lower()
         if session_id != 'all':
             session_id = int(session_id)
-    except (IndexError, ValueError):
+    except (IndexError, ValueError, TypeError):
         bot.say('Usage: .unsubscribe <id>')
     else:
         sessions = get_account_sesssions(bot.db, trigger.account)
