@@ -16,11 +16,12 @@ logger = logging.getLogger(__name__)
 
 
 class ScheduleConfigSection(StaticSection):
+    fahrplan_url = ValidatedAttribute('fahrplan_url', default="https://events.ccc.de/congress/{year}/Fahrplan/")
     url = ValidatedAttribute('url', default="https://events.ccc.de/congress/{year}/Fahrplan/schedule.json")
     session_url = ValidatedAttribute('session_url',
                                      default='https://events.ccc.de/congress/{year}/Fahrplan/events/{id}.html')
     topic_template = ValidatedAttribute('topic_template',
-                                        default='{acronym} - {title} | {start} -> {end} | Day {dayN} | Query c3schedule with .help/.subscribe/.unsubscribe/.info/.schedule')
+                                        default='{acronym} - {title} | {start} -> {end} | Day {dayN} | {url} | Query c3schedule with .help/.subscribe/.unsubscribe/.info/.schedule')
     channel = ValidatedAttribute('channel', default="#33c3-schedule")
 
 
@@ -322,7 +323,8 @@ def update_topic(bot):
     topic = bot.config.c3schedule.topic_template.format(
         acronym=schedule.conference.acronym, title=schedule.conference.title, start=schedule.conference.start,
         end=schedule.conference.end,
-        dayN=dayN
+        dayN=dayN,
+        url=bot.config.c3schedule.fahrplan_url.format(year=schedule.conference.start.year)
     )
 
     if bot.channels[bot.config.c3schedule.channel].topic != topic:
