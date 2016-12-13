@@ -135,6 +135,27 @@ def show_help(bot, trigger):
         sopel.formatting.CONTROL_BOLD + '.schedule' + sopel.formatting.CONTROL_NORMAL + "  ‒ View your personal (upcoming) schedule."
     )
 
+
+@sopel.module.commands('search')
+@sopel.module.require_privmsg()
+@require_account(message='You can only via your personal schedule with a nickserv account')
+def search_session(bot, trigger):
+    search_string = trigger.group(3)
+
+    if search_string is None:
+        bot.say('Usage: .search <term>')
+        return
+
+    schedule = bot.memory['c3schedule']
+    RESULT_LIMIT = 10
+
+    sessions = schedule.search_sessions(search_string, max_results=RESULT_LIMIT)
+
+    bot.say('Here are the resulsts (max {}):'.format(RESULT_LIMIT))
+    for session in sessions:
+        bot.say(session.format_summary())
+
+
 @sopel.module.commands('schedule')
 @sopel.module.require_privmsg()
 @require_account(message='You can only via your personal schedule with a nickserv account')
@@ -619,6 +640,23 @@ class Schedule:
             for room_name, room in day.rooms.items():
                 if session_id in room.sessions:
                     return room.sessions[session_id]
+
+    def _isessions(self):
+        for day in self.conference.days:
+            for room_name, room in day.rooms.items():
+                for session_id, session in room.sessions.items():
+                        yield session
+
+    def search_sessions(self, search_string, max_results=10):
+        sessions =[]
+        for session in self._isessions():
+            if search_string in session.title or search_string in str(session.persons):
+                sessions.append(session)
+
+                if len(sessions) >= max_results:
+                    break
+
+        return sessions
 
     @classmethod
     def from_json(cls, schedule_json):
