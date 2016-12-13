@@ -151,6 +151,10 @@ def search_session(bot, trigger):
 
     sessions = schedule.search_sessions(search_string, max_results=RESULT_LIMIT)
 
+    if len(sessions) == 0:
+        bot.say("No results found.")
+        return
+
     bot.say('Here are the resulsts (max {}):'.format(RESULT_LIMIT))
     for session in sessions:
         bot.say(session.format_summary())
@@ -648,9 +652,10 @@ class Schedule:
                         yield session
 
     def search_sessions(self, search_string, max_results=10):
+        search_string = search_string.lower()
         sessions =[]
         for session in self._isessions():
-            if search_string in session.title or search_string in str(session.persons):
+            if search_string in session.title.lower() or search_string in str(session.persons).lower():
                 sessions.append(session)
 
                 if len(sessions) >= max_results:
