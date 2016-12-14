@@ -3,7 +3,6 @@ import functools
 import logging
 import threading
 import time
-from json import JSONDecodeError
 
 import dateutil.parser
 import pendulum
@@ -689,7 +688,7 @@ class ScheduleDownloadTask:
         response = requests.get(self.url)
         try:
             schedule_json = response.json()['schedule']
-        except JSONDecodeError as e:
+        except Exception as e:
             logger.exception(e)
             return None
         else:
