@@ -3,6 +3,7 @@ import functools
 import logging
 import threading
 import time
+from json import JSONDecodeError
 
 import dateutil.parser
 import pendulum
@@ -80,11 +81,11 @@ def setup(bot):
     bot.memory['c3schedule_current_tracks'] = {}
 
     # FIXME: remove this after initial development phase (pre 33c3)
-    bot.memory['c3schedule_fake_date'] = parse_date('2015-12-27')
+    bot.memory['c3schedule_fake_date'] = parse_date('2015-12-28')
 
     setup_database(bot.db)
 
-    refresh_schedule(bot)
+    refresh_schedule(bot, startup=True)
 
 
 def require_account(message=None):
@@ -364,18 +365,19 @@ def update_topic(bot):
 
 @sopel.module.interval(600)
 @sopel.module.unblockable
-def refresh_schedule(bot):
+def refresh_schedule(bot, startup=False):
+    old_schedule = bot.memory['c3schedule']
+
     logger.info('Downloading schedule')
     task = ScheduleDownloadTask(bot.config.c3schedule.url.format(year=get_today(bot).year))
+
     schedule = task.run()
+    announcer = bot.memory.get('c3schedule_announcer')
 
-    if bot.memory.get('c3schedule'):
-        old_schedule = bot.memory['c3schedule']
+    if announcer:
+        announcer.stop()
 
-        if 'c3schedule_announcer' in bot.memory:
-            bot.memory['c3schedule_announcer'].stop()
-
-        bot.memory['c3schedule'] = schedule
+    if old_schedule and schedule:
 
         if old_schedule.version != schedule.version:
             changed_sessions, added_sessions, missing_sessions = [], [], []
@@ -420,25 +422,29 @@ def refresh_schedule(bot):
                     time.sleep(1)
                     send_session_removed_to_account(bot, account, session)
 
-                    # FIXME: this should only happen after the first run...
-                    # for session in added_sessions:
-                    #     time.sleep(0.5)
-                    #     send_session_added(bot, bot.config.c3schedule.channel, session)
-                    #     for account in get_accounts_for_session_id(bot.db, session.id):
-                    #         time.sleep(1)
-                    #         send_session_added_to_account(bot, account, session)
+            if not startup:
+            # FIXME: this should only happen after the first run...
+            for session in added_sessions:
+                time.sleep(0.5)
+                send_session_added(bot, bot.config.c3schedule.channel, session)
+                for account in get_accounts_for_session_id(bot.db, session.id):
+                    time.sleep(1)
+                    send_session_added_to_account(bot, account, session)
 
+    if schedule is None:
+        schedule = old_schedule
 
-    else:
-        bot.memory['c3schedule'] = schedule
+    bot.memory['c3schedule'] = schedule
 
-    bot.memory['c3schedule_announcer'] = AnnoucementScheduler(bot)
-
-    # try to schedule all sessions
-    for day in schedule.conference.days:
-        for room_name, room in day.rooms.items():
-            for session in room.sessions.values():
-                bot.memory['c3schedule_announcer'].add(session)
+    if schedule:
+        announcer = bot.memory['c3schedule_announcer'] = AnnoucementScheduler(bot)
+        # try to schedule all sessions within the next hour seconds
+        future = get_now(bot) + datetime.timedelta(hours=1)
+        for day in schedule.conference.days:
+            for room_name, room in day.rooms.items():
+                for session in room.sessions.values():
+                    if session.date < future:
+                        announcer.add(session)
 
 
 def get_nick_for_account(bot, account):
@@ -681,8 +687,17 @@ class ScheduleDownloadTask:
 
     def run(self):
         response = requests.get(self.url)
-        schedule_json = response.json()['schedule']
-        return Schedule.from_json(schedule_json)
+        try:
+            schedule_json = response.json()['schedule']
+        except JSONDecodeError as e:
+            logger.exception(e)
+            return None
+        else:
+            try:
+                return Schedule.from_json(schedule_json)
+            except (KeyError, IndexError) as e:
+                logger.exception(e)
+                return None
 
 
 class ScheduledSession:
