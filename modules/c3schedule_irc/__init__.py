@@ -423,13 +423,13 @@ def refresh_schedule(bot, startup=False):
                     send_session_removed_to_account(bot, account, session)
 
             if not startup:
-            # FIXME: this should only happen after the first run...
-            for session in added_sessions:
-                time.sleep(0.5)
-                send_session_added(bot, bot.config.c3schedule.channel, session)
-                for account in get_accounts_for_session_id(bot.db, session.id):
-                    time.sleep(1)
-                    send_session_added_to_account(bot, account, session)
+                # FIXME: this should only happen after the first run...
+                for session in added_sessions:
+                    time.sleep(0.5)
+                    send_session_added(bot, bot.config.c3schedule.channel, session)
+                    for account in get_accounts_for_session_id(bot.db, session.id):
+                        time.sleep(1)
+                        send_session_added_to_account(bot, account, session)
 
     if schedule is None:
         schedule = old_schedule
