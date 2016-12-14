@@ -183,7 +183,7 @@ def show_nextup(bot, trigger):
 
 @sopel.module.commands('schedule')
 @sopel.module.require_privmsg()
-@require_account(message='You can only via your personal schedule with a nickserv account')
+@require_account(message='You can only view your personal schedule with a nickserv account')
 def show_personal_schedule(bot, trigger):
     session_ids = get_account_sesssions(bot.db, trigger.account)
 
@@ -201,6 +201,28 @@ def show_personal_schedule(bot, trigger):
 
     bot.say('Your personal (upcoming) schedule:')
 
+    for session in sessions:
+        bot.say(session.format_summary())
+
+
+@sopel.module.commands('list')
+@sopel.module.require_privmsg()
+@require_account(
+    message='You can only view your personal list of subscriptions while being authenticated with nickserv')
+def show_subscription_list(bot, trigger):
+    session_ids = get_account_sesssions(bot.db, trigger.account)
+
+    if len(session_ids) == 0:
+        bot.say('You do not have any subscriptions.')
+        return
+
+    # resolve sessions to objects
+    schedule = bot.memory['c3schedule']
+    sessions = [schedule.get_session(session_id) for session_id in session_ids]
+
+    sessions = sorted(sessions, key=lambda session: session.date)
+
+    bot.say('Your subscriptions:')
     for session in sessions:
         bot.say(session.format_summary())
 
@@ -682,11 +704,12 @@ class Schedule:
         self.version = version
         self.conference = conference
 
+        self._session_by_id = {}
+        for session in self.isessions():
+            self._session_by_id[session.id] = session
+
     def get_session(self, session_id):
-        for day in self.conference.days:
-            for room_name, room in day.rooms.items():
-                if session_id in room.sessions:
-                    return room.sessions[session_id]
+        return self._session_by_id.get(session_id)
 
     def isessions(self):
         for day in self.conference.days:
@@ -720,18 +743,23 @@ class ScheduleDownloadTask:
         self.url = url
 
     def run(self):
-        response = requests.get(self.url)
         try:
-            schedule_json = response.json()['schedule']
-        except Exception as e:
+            response = requests.get(self.url)
+        except requests.ConnectionError as e:
             logger.exception(e)
             return None
         else:
             try:
-                return Schedule.from_json(schedule_json)
-            except (KeyError, IndexError) as e:
+                schedule_json = response.json()['schedule']
+            except Exception as e:
                 logger.exception(e)
                 return None
+            else:
+                try:
+                    return Schedule.from_json(schedule_json)
+                except (KeyError, IndexError) as e:
+                    logger.exception(e)
+                    return None
 
 
 class ScheduledSession:
