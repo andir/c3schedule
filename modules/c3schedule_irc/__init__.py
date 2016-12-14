@@ -371,7 +371,7 @@ def announce_scheduled_start(bot, session):
 def announce_start(bot, session):
     diff = session.date - get_now(bot)
 
-    msg = 'NOW ' + session.format_summary()
+    msg = 'NOW ' + session.format_short()
 
     bot.msg(bot.config.c3schedule.channel, msg)
 
