@@ -177,7 +177,7 @@ def show_nextup(bot, trigger):
         bot.say('Sorry but thats it. No more sessions :(')
     else:
         bot.say('Here is what is coming up next:')
-        for session in sessions:
+        for session in next_sessions:
             bot.say(session.format_summary())
 
 
