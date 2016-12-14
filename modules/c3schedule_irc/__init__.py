@@ -21,7 +21,7 @@ class ScheduleConfigSection(StaticSection):
     session_url = ValidatedAttribute('session_url',
                                      default='https://events.ccc.de/congress/{year}/Fahrplan/events/{id}.html')
     topic_template = ValidatedAttribute('topic_template',
-                                        default='{acronym} - {title} | {start} -> {end} | Day {dayN} | {url} | Query c3schedule with .help/.subscribe/.unsubscribe/.info/.schedule')
+                                        default='{acronym} - {title} | {start} -> {end} | Day {dayN} | {url} | Query c3schedule with .help/.subscribe/.unsubscribe/.info/.schedule/.search')
     channel = ValidatedAttribute('channel', default="#33c3-schedule")
 
 
@@ -132,10 +132,12 @@ def show_help(bot, trigger):
     bot.say(
         sopel.formatting.CONTROL_BOLD + ".subscribe <id>" + sopel.formatting.CONTROL_NORMAL + " ‒ Subscribe to a session. This will enable notifications. (Reminders, Changes)")
     bot.say(
-        sopel.formatting.CONTROL_BOLD + '.unsubscribe <id>' + sopel.formatting.CONTROL_NORMAL + "  ‒ Unsubscribe from a session. Using ALL as id will remove all sessions.")
+        sopel.formatting.CONTROL_BOLD + '.unsubscribe <id>' + sopel.formatting.CONTROL_NORMAL + " ‒ Unsubscribe from a session. Using ALL as id will remove all sessions.")
     bot.say(
-        sopel.formatting.CONTROL_BOLD + '.schedule' + sopel.formatting.CONTROL_NORMAL + "  ‒ View your personal (upcoming) schedule."
+        sopel.formatting.CONTROL_BOLD + '.schedule' + sopel.formatting.CONTROL_NORMAL + " ‒ View your personal (upcoming) schedule."
     )
+    bot.say(sopel.formatting.CONTROL_BOLD + '.search' + sopel.formatting.CONTROL_NORMAL + " ‒ Search for a session")
+    bot.say(sopel.formatting.CONTROL_BOLD + '.nextup' + sopel.formatting.CONTROL_NORMAL + " ‒ See what is coming up")
 
 
 @sopel.module.commands('search')
@@ -160,6 +162,23 @@ def search_session(bot, trigger):
     bot.say('Here are the resulsts (max {}):'.format(RESULT_LIMIT))
     for session in sessions:
         bot.say(session.format_summary())
+
+
+@sopel.module.commands('nextup')
+@sopel.module.require_privmsg()
+def show_nextup(bot, trigger):
+    schedule = bot.memory['c3schedule']
+
+    now = get_now(bot)
+    sessions = (session for session in schedule.isessions() if session.date >= now)
+    next_sessions = sorted(sessions, key=lambda session: session.date)[:6]
+
+    if len(next_sessions) == 0:
+        bot.say('Sorry but thats it. No more sessions :(')
+    else:
+        bot.say('Here is what is coming up next:')
+        for session in sessions:
+            bot.say(session.format_summary())
 
 
 @sopel.module.commands('schedule')
@@ -315,8 +334,9 @@ def get_conference_day(bot):
 
 def announce_scheduled_start(bot, session):
     diff = session.date - get_now(bot)
+    pdiff = pendulum.interval.instance(diff)
 
-    msg = 'Starting in ' + pendulum.interval.instance(diff).in_words() + ' ' + session.format_summary()
+    msg = session.format_short() + ' in ' + sopel.formatting.CONTROL_BOLD + pdiff.in_words() + sopel.formatting.CONTROL_NORMAL
 
     bot.msg(bot.config.c3schedule.channel, msg)
 
@@ -589,6 +609,20 @@ class Session:
             id=self.id
         )
 
+    def format_short(self):
+        return '[{room}] {hour} ({duration}) - [{language}/{type}] {bold}{title}{normal} / {persons} ({id})'.format(
+            language=self.language,
+            type=self.type,
+            room=self.room,
+            date='{}:{}'.format(self.date.hour, self.date.minute),
+            title=self.title,
+            duration=self.duration,
+            persons=', '.join([p.public_name for p in self.persons]),
+            bold=sopel.formatting.CONTROL_BOLD,
+            normal=sopel.formatting.CONTROL_NORMAL,
+            id=self.id
+        )
+
     def url(self, bot):
         return bot.config.c3schedule.session_url.format(year=self.date.year, id=self.id)
 
@@ -654,7 +688,7 @@ class Schedule:
                 if session_id in room.sessions:
                     return room.sessions[session_id]
 
-    def _isessions(self):
+    def isessions(self):
         for day in self.conference.days:
             for room_name, room in day.rooms.items():
                 for session_id, session in room.sessions.items():
@@ -663,8 +697,11 @@ class Schedule:
     def search_sessions(self, search_string, max_results=10):
         search_string = search_string.lower()
         sessions = []
-        for session in self._isessions():
-            if search_string in session.title.lower() or search_string in str(session.persons).lower():
+        for session in self.isessions():
+            if search_string in session.title.lower() or \
+                            search_string in session.description.lower() or \
+                            search_string in session.abstract.lower() or \
+                    any(search_string in p.public_name.lower() for p in session.persons):
                 sessions.append(session)
 
                 if len(sessions) >= max_results:
@@ -712,6 +749,7 @@ class ScheduledSession:
     def start(self):
         if self.start_timer:
             self.start_timer.start()
+        if self.scheduled_start_timer:
             self.scheduled_start_timer.start()
 
     def finished(self):
