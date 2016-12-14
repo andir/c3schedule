@@ -95,8 +95,6 @@ def require_account(message=None):
     """
 
     def actual_decorator(function):
-        print(function)
-
         @functools.wraps(function)
         def guarded(bot, trigger, *args, **kwargs):
             if not trigger.account:
