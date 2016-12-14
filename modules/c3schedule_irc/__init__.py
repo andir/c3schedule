@@ -170,7 +170,7 @@ def show_nextup(bot, trigger):
     schedule = bot.memory['c3schedule']
 
     now = get_now(bot)
-    sessions = (session for session in schedule.isessions() if session.date >= now)
+    sessions = [session for session in schedule.isessions() if session.date >= now]
     next_sessions = sorted(sessions, key=lambda session: session.date)[:6]
 
     if len(next_sessions) == 0:
@@ -636,7 +636,7 @@ class Session:
             language=self.language,
             type=self.type,
             room=self.room,
-            date='{}:{}'.format(self.date.hour, self.date.minute),
+            hour='{}:{}'.format(self.date.hour, self.date.minute),
             title=self.title,
             duration=self.duration,
             persons=', '.join([p.public_name for p in self.persons]),
