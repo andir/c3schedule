@@ -769,9 +769,11 @@ class ScheduledSession:
 
     def stop(self):
         if not self.start_timer.finished.is_set():
+            logger.debug('stopping start_timer')
             self.start_timer.cancel()
 
         if not self.scheduled_start_timer.finished.is_set():
+            logger.debug('stopping scheduled_start_timer')
             self.scheduled_start_timer.cancel()
 
     def start(self):
@@ -823,11 +825,12 @@ class AnnoucementScheduler:
         if delay < 0:
             delay = 0
 
+        announce_delay = (session.date - now).total_seconds()
+
         scheduled_timer = threading.Timer(delay, self.announce_scheduled_start, (session,))
-        start_timer = threading.Timer((session.date - now).seconds, self.announce_start, (session,))
+        start_timer = threading.Timer(announce_delay, self.announce_start, (session,))
 
         ss = ScheduledSession(scheduled_start_timer=scheduled_timer, start_timer=start_timer)
         self.timers[session.id] = ss
         ss.start()
-        logger.info('Scheduled announcers for session.id {}. Start annoucement in {}'.format(session.id, (
-            session.date - now).seconds))
+        logger.info('Scheduled announcers for session.id {}. Start annoucement in {}. Announce delay: {}'.format(session.id, delay, announce_delay))
