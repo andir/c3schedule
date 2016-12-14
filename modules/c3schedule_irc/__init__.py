@@ -159,7 +159,7 @@ def search_session(bot, trigger):
         bot.say("No results found.")
         return
 
-    bot.say('Here are the resulsts (max {}):'.format(RESULT_LIMIT))
+    bot.say('Here are the results (max {}):'.format(RESULT_LIMIT))
     for session in sessions:
         bot.say(session.format_summary())
 
