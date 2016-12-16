@@ -80,7 +80,7 @@ def setup(bot):
     bot.memory['c3schedule_current_tracks'] = {}
 
     # FIXME: remove this after initial development phase (pre 33c3)
-    bot.memory['c3schedule_fake_date'] = parse_date('2015-12-28')
+    bot.memory['c3schedule_fake_date'] = parse_date('2016-12-27')
 
     setup_database(bot.db)
 
@@ -159,7 +159,7 @@ def search_session(bot, trigger):
         bot.say("No results found.")
         return
 
-    bot.say('Here are the results (max {}):'.format(RESULT_LIMIT))
+    bot.say('Here are the resulsts (max {}):'.format(RESULT_LIMIT))
     for session in sessions:
         bot.say(session.format_summary())
 
