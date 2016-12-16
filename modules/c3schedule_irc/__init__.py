@@ -21,7 +21,7 @@ class ScheduleConfigSection(StaticSection):
     session_url = ValidatedAttribute('session_url',
                                      default='https://events.ccc.de/congress/{year}/Fahrplan/events/{id}.html')
     topic_template = ValidatedAttribute('topic_template',
-                                        default='{acronym} - {title} | {start} -> {end} | Day {dayN} | {url} | Query c3schedule with .help/.subscribe/.unsubscribe/.info/.schedule/.search')
+                                        default='{acronym} - {title} | {start} -> {end} | Day {dayN} | {url} | Query c3schedule with .help/.subscribe/.unsubscribe/.info/.schedule/.search/.nextup')
     channel = ValidatedAttribute('channel', default="#33c3-schedule")
 
 
