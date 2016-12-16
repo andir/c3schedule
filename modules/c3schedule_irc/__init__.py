@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class ScheduleConfigSection(StaticSection):
     fahrplan_url = ValidatedAttribute('fahrplan_url', default="https://events.ccc.de/congress/{year}/Fahrplan/")
-    url = ValidatedAttribute('url', default="https://events.ccc.de/congress/{year}/Fahrplan/schedule.json")
+    url = ValidatedAttribute('url', default="https://fahrplan.events.ccc.de/congress/{year}/Fahrplan/schedule.json")
     session_url = ValidatedAttribute('session_url',
                                      default='https://events.ccc.de/congress/{year}/Fahrplan/events/{id}.html')
     topic_template = ValidatedAttribute('topic_template',
