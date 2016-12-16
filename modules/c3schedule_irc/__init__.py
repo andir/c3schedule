@@ -355,7 +355,20 @@ def announce_scheduled_start(bot, session):
     diff = session.date - get_now(bot)
     pdiff = pendulum.interval.instance(diff)
 
-    msg = session.format_short() + ' in ' + sopel.formatting.CONTROL_BOLD + pdiff.in_words() + sopel.formatting.CONTROL_NORMAL
+    seconds = pdiff.total_seconds()
+
+    color = None
+
+    if seconds >= 800:
+        color = sopel.formatting.colors.YELLOW
+    elif seconds >= 500:
+        color = sopel.formatting.colors.ORANGE
+    else:
+        color = sopel.formatting.colors.RED
+
+
+
+    msg = session.format_short(color=color) + ' in ' + sopel.formatting.CONTROL_BOLD + pdiff.in_words() + sopel.formatting.CONTROL_NORMAL
 
     bot.msg(bot.config.c3schedule.channel, msg)
 
@@ -365,10 +378,11 @@ def announce_scheduled_start(bot, session):
             bot.msg(nick, msg)
 
 
+
 def announce_start(bot, session):
     diff = session.date - get_now(bot)
 
-    msg = 'NOW ' + session.format_short()
+    msg = 'NOW ' + session.format_short(color=sopel.formatting.colors.RED)
 
     bot.msg(bot.config.c3schedule.channel, msg)
 
@@ -614,13 +628,23 @@ class Session:
                    session_json['links'],
                    session_json['attachments'])
 
-    def format_summary(self):
+    def format_summary(self, color=None):
+        date = str(self.date)
+        if color:
+            date = sopel.formatting.color(date, fg=color)
+
+        title = self.title
+        if color:
+            title = sopel.formatting.color(title, fg=color)
+
+
+
         return '[{room}] {date} ({duration}) ‒ [{language}/{type}] {bold}{title}{normal} / {persons} ({id})'.format(
             language=self.language,
             type=self.type,
             room=self.room,
-            date=self.date,
-            title=self.title,
+            date=date,
+            title=title,
             duration=self.duration,
             persons=', '.join([p.public_name for p in self.persons]),
             bold=sopel.formatting.CONTROL_BOLD,
@@ -628,13 +652,21 @@ class Session:
             id=self.id
         )
 
-    def format_short(self):
+    def format_short(self, color=None):
+        hour = '{:02}:{:02}'.format(self.date.hour, self.date.minute)
+        if color:
+            hour = sopel.formatting.color(hour, fg=color)
+
+        title = self.title
+        if color:
+            title = sopel.formatting.color(title, fg=color)
+
         return '[{room}] {hour} ({duration}) - [{language}/{type}] {bold}{title}{normal} / {persons} ({id})'.format(
             language=self.language,
             type=self.type,
             room=self.room,
-            hour='{}:{}'.format(self.date.hour, self.date.minute),
-            title=self.title,
+            hour=hour,
+            title=title,
             duration=self.duration,
             persons=', '.join([p.public_name for p in self.persons]),
             bold=sopel.formatting.CONTROL_BOLD,
