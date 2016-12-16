@@ -193,11 +193,10 @@ def show_personal_schedule(bot, trigger):
 
     # resolve sessions to objects
     schedule = bot.memory['c3schedule']
-    sessions = [schedule.get_session(session_id) for session_id in session_ids]
+    sessions = schedule.get_sessions(session_ids)
 
     now = get_now(bot)
     sessions = [session for session in sessions if session.date >= now or session.date + session.duration >= now]
-    sessions = sorted(sessions, key=lambda session: session.date)
 
     bot.say('Your personal (upcoming) schedule:')
 
@@ -218,9 +217,7 @@ def show_subscription_list(bot, trigger):
 
     # resolve sessions to objects
     schedule = bot.memory['c3schedule']
-    sessions = [schedule.get_session(session_id) for session_id in session_ids]
-
-    sessions = sorted(sessions, key=lambda session: session.date)
+    sessions = schedule.get_sessions(session_ids)
 
     bot.say('Your subscriptions:')
     for session in sessions:
@@ -710,6 +707,15 @@ class Schedule:
 
     def get_session(self, session_id):
         return self._session_by_id.get(session_id)
+
+    def get_sessions(self, session_ids):
+        l = []
+        for session_id in session_ids:
+            s = self.get_session(session_id)
+            if s:
+                l.append(s)
+
+        return sorted(l, key=lambda session: session.date)
 
     def isessions(self):
         for day in self.conference.days:
