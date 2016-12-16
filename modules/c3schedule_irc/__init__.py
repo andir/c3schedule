@@ -16,10 +16,10 @@ logger = logging.getLogger(__name__)
 
 
 class ScheduleConfigSection(StaticSection):
-    fahrplan_url = ValidatedAttribute('fahrplan_url', default="https://events.ccc.de/congress/{year}/Fahrplan/")
+    fahrplan_url = ValidatedAttribute('fahrplan_url', default="https://fahrplan.events.ccc.de/congress/{year}/Fahrplan/")
     url = ValidatedAttribute('url', default="https://fahrplan.events.ccc.de/congress/{year}/Fahrplan/schedule.json")
     session_url = ValidatedAttribute('session_url',
-                                     default='https://events.ccc.de/congress/{year}/Fahrplan/events/{id}.html')
+                                     default='https://fahrplan.events.ccc.de/congress/{year}/Fahrplan/events/{id}.html')
     topic_template = ValidatedAttribute('topic_template',
                                         default='{acronym} - {title} | {start} -> {end} | Day {dayN} | {url} | Query c3schedule with .help/.subscribe/.unsubscribe/.info/.schedule/.search/.nextup')
     channel = ValidatedAttribute('channel', default="#33c3-schedule")
