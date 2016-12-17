@@ -123,6 +123,7 @@ def get_today(bot):
 
 @sopel.module.commands('help')
 @sopel.module.require_privmsg()
+@sopel.module.rate(user=10)
 def show_help(bot, trigger):
     bot.say(
         "I'm here to help you attend the sessions you want to attend. You can ask me to remind you about upcoming sessions and changes to those.")
@@ -143,6 +144,7 @@ def show_help(bot, trigger):
 @sopel.module.commands('search')
 @sopel.module.require_privmsg()
 @require_account(message='You can only via your personal schedule with a nickserv account')
+@sopel.module.rate(user=1)
 def search_session(bot, trigger):
     search_string = trigger.group(3)
 
@@ -166,6 +168,7 @@ def search_session(bot, trigger):
 
 @sopel.module.commands('nextup')
 @sopel.module.require_privmsg()
+@sopel.module.rate(user=10)
 def show_nextup(bot, trigger):
     schedule = bot.memory['c3schedule']
 
@@ -184,6 +187,7 @@ def show_nextup(bot, trigger):
 @sopel.module.commands('schedule')
 @sopel.module.require_privmsg()
 @require_account(message='You can only view your personal schedule with a nickserv account')
+@sopel.module.rate(user=10)
 def show_personal_schedule(bot, trigger):
     session_ids = get_account_sesssions(bot.db, trigger.account)
 
@@ -206,6 +210,7 @@ def show_personal_schedule(bot, trigger):
 
 @sopel.module.commands('list')
 @sopel.module.require_privmsg()
+@sopel.module.rate(user=10)
 @require_account(
     message='You can only view your personal list of subscriptions while being authenticated with nickserv')
 def show_subscription_list(bot, trigger):
@@ -226,6 +231,7 @@ def show_subscription_list(bot, trigger):
 
 @sopel.module.commands('info')
 @sopel.module.require_privmsg()
+@sopel.module.rate(user=3)
 def show_info(bot, trigger):
     try:
         session_id = int(trigger.group(3))
@@ -247,6 +253,7 @@ def show_info(bot, trigger):
 @sopel.module.commands('subscribe')
 @sopel.module.require_privmsg()
 @require_account(message='You can only subscribe with a valid nickserv account')
+@sopel.module.rate(user=0)
 def subscribe_to_session(bot, trigger):
     try:
         session_id = int(trigger.group(3))
@@ -276,6 +283,7 @@ def subscribe_to_session(bot, trigger):
 @sopel.module.commands('unsubscribe')
 @sopel.module.require_privmsg()
 @require_account(message='You can only unsubscribe with a valid nickserv account')
+@sopel.module.rate(user=1)
 def unsubscribe_from_session(bot, trigger):
     try:
         session_id = trigger.group(3).lower()
