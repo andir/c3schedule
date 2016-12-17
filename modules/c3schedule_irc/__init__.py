@@ -381,8 +381,7 @@ def announce_scheduled_start(bot, session):
     bot.msg(bot.config.c3schedule.channel, msg)
 
     for account in get_accounts_for_session_id(bot.db, session.id):
-        nick = get_nick_for_account(bot, account)
-        if nick:
+        for nick in get_nicks_for_account(bot, account):
             bot.msg(nick, msg)
 
 
@@ -395,8 +394,7 @@ def announce_start(bot, session):
     bot.msg(bot.config.c3schedule.channel, msg)
 
     for account in get_accounts_for_session_id(bot.db, session.id):
-        nick = get_nick_for_account(bot, account)
-        if nick:
+        for nick in get_nicks_for_account(bot, account):
             bot.msg(nick, msg)
 
 
@@ -505,18 +503,15 @@ def refresh_schedule(bot, startup=False):
                         announcer.add(session)
 
 
-def get_nick_for_account(bot, account):
+def get_nicks_for_account(bot, account):
     for user in bot.users.values():
         if user.account == account:
-            return user.nick
+            yield user.nick
 
 
 def send_session_changed_to_account(bot, account, session):
-    nick = get_nick_for_account(bot, account)
-    if nick is None:
-        return
-
-    send_session_changed(bot, nick, session)
+    for nick in get_nicks_for_account(bot, account):
+        send_session_changed(bot, nick, session)
 
 
 def send_session_changed(bot, to, session):
@@ -530,11 +525,8 @@ def send_session_changed(bot, to, session):
 
 
 def send_session_removed_to_account(bot, account, session):
-    nick = get_nick_for_account(bot, account)
-    if nick is None:
-        return
-
-    send_session_removed(bot, nick, session)
+    for nick in get_nicks_for_account(bot, account):
+        send_session_removed(bot, nick, session)
 
 
 def send_session_removed(bot, to, session):
@@ -545,11 +537,8 @@ def send_session_removed(bot, to, session):
 
 
 def send_session_added_to_account(bot, account, session):
-    nick = get_nick_for_account(bot, account)
-    if nick is None:
-        return
-
-    send_session_added(bot, nick, session)
+    for nick in get_nicks_for_account(bot, account):
+        send_session_added(bot, nick, session)
 
 
 def send_session_added(bot, to, session):
