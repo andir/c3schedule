@@ -634,10 +634,6 @@ class Session:
             date = sopel.formatting.color(date, fg=color)
 
         title = self.title
-        if color:
-            title = sopel.formatting.color(title, fg=color)
-
-
 
         return '[{room}] {date} ({duration}) ‒ [{language}/{type}] {bold}{title}{normal} / {persons} ({id})'.format(
             language=self.language,
@@ -658,8 +654,6 @@ class Session:
             hour = sopel.formatting.color(hour, fg=color)
 
         title = self.title
-        if color:
-            title = sopel.formatting.color(title, fg=color)
 
         return '[{room}] {hour} ({duration}) - [{language}/{type}] {bold}{title}{normal} / {persons} ({id})'.format(
             language=self.language,
