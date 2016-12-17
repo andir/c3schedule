@@ -815,6 +815,7 @@ class ScheduledSession:
             self.scheduled_start_timer.start()
 
     def finished(self):
+        return False # FIXME: lets just stop the timers again..
         return self.start_timer.finished.is_set() and self.scheduled_start_timer.finished.is_set()
 
 
@@ -826,6 +827,7 @@ class AnnoucementScheduler:
         self.timers = {} if timers is None else timers
 
     def stop(self):
+        logger.info('Stopping scheduled announcements')
         for timer in self.timers.values():
             if not timer.finished():
                 timer.stop()
