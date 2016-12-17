@@ -418,17 +418,17 @@ def update_topic(bot):
 def refresh_schedule(bot, startup=False):
     old_schedule = bot.memory['c3schedule']
 
+
     logger.info('Downloading schedule')
     task = ScheduleDownloadTask(bot.config.c3schedule.url.format(year=get_today(bot).year))
-
     schedule = task.run()
+
     announcer = bot.memory.get('c3schedule_announcer')
 
     if announcer:
         announcer.stop()
 
     if old_schedule and schedule:
-
         if old_schedule.version != schedule.version:
             changed_sessions, added_sessions, missing_sessions = [], [], []
             for i, day in enumerate(schedule.conference.days):
@@ -728,6 +728,12 @@ class Schedule:
         self.conference = conference
 
         self._session_by_id = {}
+
+        self._hash_sessions()
+
+    def _hash_sessions(self):
+        self._session_by_id = {}
+
         for session in self.isessions():
             self._session_by_id[session.id] = session
 
@@ -861,7 +867,12 @@ class AnnoucementScheduler:
 
         announce_delay = (session.date - now).total_seconds()
 
-        scheduled_timer = threading.Timer(delay, self.announce_scheduled_start, (session,))
+        if delay > 0:
+            scheduled_timer = threading.Timer(delay, self.announce_scheduled_start, (session,))
+        else:
+            scheduled_timer = None
+
+
         start_timer = threading.Timer(announce_delay, self.announce_start, (session,))
 
         ss = ScheduledSession(scheduled_start_timer=scheduled_timer, start_timer=start_timer)
