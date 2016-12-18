@@ -2,7 +2,6 @@ import datetime
 import functools
 import logging
 import threading
-import time
 
 import dateutil.parser
 import pendulum
@@ -16,7 +15,8 @@ logger = logging.getLogger(__name__)
 
 
 class ScheduleConfigSection(StaticSection):
-    fahrplan_url = ValidatedAttribute('fahrplan_url', default="https://fahrplan.events.ccc.de/congress/{year}/Fahrplan/")
+    fahrplan_url = ValidatedAttribute('fahrplan_url',
+                                      default="https://fahrplan.events.ccc.de/congress/{year}/Fahrplan/")
     url = ValidatedAttribute('url', default="https://fahrplan.events.ccc.de/congress/{year}/Fahrplan/schedule.json")
     session_url = ValidatedAttribute('session_url',
                                      default='https://fahrplan.events.ccc.de/congress/{year}/Fahrplan/events/{id}.html')
@@ -374,16 +374,14 @@ def announce_scheduled_start(bot, session):
     else:
         color = sopel.formatting.colors.RED
 
-
-
-    msg = session.format_short(color=color) + ' in ' + sopel.formatting.CONTROL_BOLD + pdiff.in_words() + sopel.formatting.CONTROL_NORMAL
+    msg = session.format_short(
+        color=color) + ' in ' + sopel.formatting.CONTROL_BOLD + pdiff.in_words() + sopel.formatting.CONTROL_NORMAL
 
     bot.msg(bot.config.c3schedule.channel, msg)
 
     for account in get_accounts_for_session_id(bot.db, session.id):
         for nick in get_nicks_for_account(bot, account):
             bot.msg(nick, msg)
-
 
 
 def announce_start(bot, session):
@@ -419,11 +417,44 @@ def update_topic(bot):
         bot.write(('TOPIC', bot.config.c3schedule.channel + ' :' + topic))
 
 
+def diff_schedules(old_schedule, schedule):
+    changed_sessions, added_sessions, missing_sessions = [], [], []
+
+    if old_schedule.version != schedule.version:
+        days = len(old_schedule.conference.days)
+        for i, day in enumerate(schedule.conference.days, start=0):
+            if days < i+1:
+                for room_name, room in day.rooms.items():
+                    for session in room.sessions.values():
+                        added_sessions.append(session)
+            else:
+                old_day = old_schedule.conference.days[i]
+                for room_name, room in day.rooms.items():
+                    old_room = old_day.rooms.get(room_name)
+                    if old_room is None:
+                        for session in room.sessions.values():
+                            added_sessions.append(session)
+                    else:
+                        for session_id, session in room.sessions.items():
+                            if session_id not in old_room.sessions:
+                                added_sessions.append(session)
+                            else:
+                                if session == old_room.sessions[session_id]:
+                                    pass
+                                else:
+                                    changed_sessions.append(session)
+
+                        for session in old_room.sessions.values():
+                            if session.id not in room.sessions:
+                                missing_sessions.append(session)
+
+    return changed_sessions, added_sessions, missing_sessions
+
+
 @sopel.module.interval(600)
 @sopel.module.unblockable
 def refresh_schedule(bot, startup=False):
     old_schedule = bot.memory['c3schedule']
-
 
     logger.info('Downloading schedule')
     task = ScheduleDownloadTask(bot.config.c3schedule.url.format(year=get_today(bot).year))
@@ -435,57 +466,24 @@ def refresh_schedule(bot, startup=False):
         announcer.stop()
 
     if old_schedule and schedule:
-        if old_schedule.version != schedule.version:
-            changed_sessions, added_sessions, missing_sessions = [], [], []
-            for i, day in enumerate(schedule.conference.days):
-                if len(old_schedule.conference.days) - 1 <= i:
-                    for room_name, room in day.rooms.items():
-                        for session in room.sessions.values():
-                            added_sessions.append(session)
-                else:
-                    old_day = old_schedule.conference.days[i]
-                    for room_name, room in day.rooms.items():
-                        old_room = old_day.rooms.get(room_name)
-                        if old_room is None:
-                            for session in room.sessions.values():
-                                added_sessions.append(session)
-                        else:
-                            for session_id, session in room.sessions.items():
-                                if session_id not in old_room.sessions:
-                                    added_sessions.append(session)
-                                else:
-                                    if session == old_room.sessions[session_id]:
-                                        pass
-                                    else:
-                                        changed_sessions.append(session)
+        changed_sessions, added_sessions, missing_sessions = diff_schedules(old_schedule, schedule)
 
-                            for session in old_room.sessions:
-                                if session.id not in room.sessions:
-                                    missing_sessions.append(session)
+        # notify subscribers about changes to their tracks
+        for session in changed_sessions:
+            send_session_changed(bot, bot.config.c3schedule.channel, session)
+            for account in get_accounts_for_session_id(bot.db, session.id):
+                send_session_changed_to_account(bot, account, session)
 
-            # notify subscribers about changes to their tracks
-            for session in changed_sessions:
-                time.sleep(0.5)
-                send_session_changed(bot, bot.config.c3schedule.channel, session)
+        for session in missing_sessions:
+            send_session_removed(bot, bot.config.c3schedule.channel, session)
+            for account in get_accounts_for_session_id(bot.db, session.id):
+                send_session_removed_to_account(bot, account, session)
+
+        if not startup:
+            for session in added_sessions:
+                send_session_added(bot, bot.config.c3schedule.channel, session)
                 for account in get_accounts_for_session_id(bot.db, session.id):
-                    time.sleep(1)
-                    send_session_changed_to_account(bot, account, session)
-
-            for session in missing_sessions:
-                time.sleep(0.5)
-                send_session_removed(bot, bot.config.c3schedule.channel, session)
-                for account in get_accounts_for_session_id(bot.db, session.id):
-                    time.sleep(1)
-                    send_session_removed_to_account(bot, account, session)
-
-            if not startup:
-                # FIXME: this should only happen after the first run...
-                for session in added_sessions:
-                    time.sleep(0.5)
-                    send_session_added(bot, bot.config.c3schedule.channel, session)
-                    for account in get_accounts_for_session_id(bot.db, session.id):
-                        time.sleep(1)
-                        send_session_added_to_account(bot, account, session)
+                    send_session_added_to_account(bot, account, session)
 
     if schedule is None:
         schedule = old_schedule
@@ -818,7 +816,7 @@ class ScheduledSession:
             self.scheduled_start_timer.start()
 
     def finished(self):
-        return False # FIXME: lets just stop the timers again..
+        return False  # FIXME: lets just stop the timers again..
         return self.start_timer.finished.is_set() and self.scheduled_start_timer.finished.is_set()
 
 
@@ -869,10 +867,12 @@ class AnnoucementScheduler:
         else:
             scheduled_timer = None
 
-
         start_timer = threading.Timer(announce_delay, self.announce_start, (session,))
 
         ss = ScheduledSession(scheduled_start_timer=scheduled_timer, start_timer=start_timer)
         self.timers[session.id] = ss
         ss.start()
-        logger.info('Scheduled announcers for session.id {}. Start annoucement in {}. Announce delay: {}'.format(session.id, delay, announce_delay))
+        logger.info(
+            'Scheduled announcers for session.id {}. Start annoucement in {}. Announce delay: {}'.format(session.id,
+                                                                                                         delay,
+                                                                                                         announce_delay))
