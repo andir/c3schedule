@@ -803,11 +803,11 @@ class ScheduledSession:
         self.start_timer = start_timer
 
     def stop(self):
-        if not self.start_timer.finished.is_set():
+        if self.start_timer and not self.start_timer.finished.is_set():
             logger.debug('stopping start_timer')
             self.start_timer.cancel()
 
-        if not self.scheduled_start_timer.finished.is_set():
+        if self.scheduled_start_timer and not self.scheduled_start_timer.finished.is_set():
             logger.debug('stopping scheduled_start_timer')
             self.scheduled_start_timer.cancel()
 
