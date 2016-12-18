@@ -445,21 +445,21 @@ def refresh_schedule(bot, startup=False):
                 else:
                     old_day = old_schedule.conference.days[i]
                     for room_name, room in day.rooms.items():
-                        sessions = old_day.rooms.get(room_name)
-                        if sessions is None:
+                        old_room = old_day.rooms.get(room_name)
+                        if old_room is None:
                             for session in room.sessions.values():
                                 added_sessions.append(session)
                         else:
                             for session_id, session in room.sessions.items():
-                                if not session_id in sessions:
+                                if session_id not in old_room.sessions:
                                     added_sessions.append(session)
                                 else:
-                                    if session == sessions[session_id]:
+                                    if session == old_room.sessions[session_id]:
                                         pass
                                     else:
                                         changed_sessions.append(session)
 
-                            for session in sessions:
+                            for session in old_room.sessions:
                                 if session.id not in room.sessions:
                                     missing_sessions.append(session)
 
