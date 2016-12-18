@@ -420,35 +420,26 @@ def update_topic(bot):
 def diff_schedules(old_schedule, schedule):
     changed_sessions, added_sessions, missing_sessions = [], [], []
 
-    if old_schedule.version != schedule.version:
-        days = len(old_schedule.conference.days)
-        for i, day in enumerate(schedule.conference.days, start=0):
-            if days < i+1:
-                for room_name, room in day.rooms.items():
-                    for session in room.sessions.values():
-                        added_sessions.append(session)
-            else:
-                old_day = old_schedule.conference.days[i]
-                for room_name, room in day.rooms.items():
-                    old_room = old_day.rooms.get(room_name)
-                    if old_room is None:
-                        for session in room.sessions.values():
-                            added_sessions.append(session)
-                    else:
-                        for session_id, session in room.sessions.items():
-                            if session_id not in old_room.sessions:
-                                added_sessions.append(session)
-                            else:
-                                if session == old_room.sessions[session_id]:
-                                    pass
-                                else:
-                                    changed_sessions.append(session)
+    old_sessions = dict((s.id, s) for s in old_schedule.isessions())
+    sessions = dict((s.id, s) for s in schedule.isessions())
 
-                        for session in old_room.sessions.values():
-                            if session.id not in room.sessions:
-                                missing_sessions.append(session)
+    for session_id, session in old_sessions.items():
+        if session_id not in sessions:
+            missing_sessions.append(session)
+
+
+    for session_id, session in sessions.items():
+        if session_id not in old_sessions:
+            added_sessions.append(session)
+
+    for session_id, session in sessions.items():
+        old_session = old_sessions.get(session_id)
+        if old_session:
+            if old_session != session:
+                changed_sessions.append(session)
 
     return changed_sessions, added_sessions, missing_sessions
+
 
 
 @sopel.module.interval(600)
