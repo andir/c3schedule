@@ -420,23 +420,24 @@ def update_topic(bot):
 def diff_schedules(old_schedule, schedule):
     changed_sessions, added_sessions, missing_sessions = [], [], []
 
-    old_sessions = dict((s.id, s) for s in old_schedule.isessions())
-    sessions = dict((s.id, s) for s in schedule.isessions())
+    if old_schedule.version != schedule.version:
+        old_sessions = dict((s.id, s) for s in old_schedule.isessions())
+        sessions = dict((s.id, s) for s in schedule.isessions())
 
-    for session_id, session in old_sessions.items():
-        if session_id not in sessions:
-            missing_sessions.append(session)
+        for session_id, session in old_sessions.items():
+            if session_id not in sessions:
+                missing_sessions.append(session)
 
 
-    for session_id, session in sessions.items():
-        if session_id not in old_sessions:
-            added_sessions.append(session)
+        for session_id, session in sessions.items():
+            if session_id not in old_sessions:
+                added_sessions.append(session)
 
-    for session_id, session in sessions.items():
-        old_session = old_sessions.get(session_id)
-        if old_session:
-            if old_session != session:
-                changed_sessions.append(session)
+        for session_id, session in sessions.items():
+            old_session = old_sessions.get(session_id)
+            if old_session:
+                if old_session != session:
+                    changed_sessions.append(session)
 
     return changed_sessions, added_sessions, missing_sessions
 
@@ -555,6 +556,9 @@ class Person:
         self.id = id
         self.public_name = full_public_name
 
+    def __eq__(self, other):
+        return self.public_name == other.public_name
+
     @classmethod
     def from_json(cls, person_json):
         return Person(person_json['id'], person_json.get('full_public_name', person_json.get('public_name', 'N/A')))
@@ -585,11 +589,20 @@ class Session:
         self.attachments = attachments
 
     def __eq__(self, other):
-        return self.id == other.id and self.guid == other.guid and self.logo == other.logo and self.date == other.date and self.start == other.start \
-               and self.duration == other.duration and self.room == other.room and self.slug == other.slug and self.title == other.title \
-               and self.subtitle == other.subtitle and self.track == other.track and self.type == other.type and self.language == other.language \
-               and self.abstract == other.abstract and self.description == other.description and self.recording_license == other.recording_license \
-               and self.do_not_record == other.do_not_record and self.persons == other.persons and self.links == other.links and self.attachments == other.attachments
+
+        for key, value in self.__dict__.items():
+            if value != getattr(other, key):
+                return False
+
+        return True
+        #
+        # return self.id == other.id and self.guid == other.guid and self.logo == other.logo and self.date == other.date and self.start == other.start \
+        #        and self.duration == other.duration and self.room == other.room and self.slug == other.slug and self.title == other.title \
+        #        and self.subtitle == other.subtitle and self.track == other.track and self.type == other.type and self.language == other.language \
+        #        and self.abstract == other.abstract and self.description == other.description and self.recording_license == other.recording_license \
+        #        and self.do_not_record == other.do_not_record and self.persons == other.persons
+        #
+        #        #and self.links == other.links and self.attachments == other.attachments
 
     @classmethod
     def from_json(cls, session_json):
