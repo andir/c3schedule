@@ -621,8 +621,8 @@ class Session:
                    session_json['language'],
                    session_json['abstract'],
                    session_json['description'],
-                   session_json['recording_license'],
-                   session_json['do_not_record'],
+                   session_json.get('recording_license', ''),
+                   session_json.get('do_not_record', False),
                    [Person.from_json(p) for p in session_json['persons']],
                    session_json['links'],
                    session_json['attachments'])
