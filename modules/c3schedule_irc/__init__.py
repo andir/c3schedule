@@ -624,8 +624,8 @@ class Session:
                    session_json.get('recording_license', ''),
                    session_json.get('do_not_record', False),
                    [Person.from_json(p) for p in session_json['persons']],
-                   session_json['links'],
-                   session_json['attachments'])
+                   session_json.get('links', []),
+                   session_json.get('attachments', []))
 
     def format_summary(self, color=None):
         date = str(self.date)
