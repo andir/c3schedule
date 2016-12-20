@@ -674,9 +674,9 @@ class Session:
         if self.track != 'self organized sessions':
             return bot.config.c3schedule.session_url.format(year=self.date.year, id=self.id)
         else:
-            if len(self.urls) == 0:
+            if len(self.links) == 0:
                 return 'N/A'
-            return ' '.join(self.urls)
+            return ' '.join(self.links)
 
 
 class Room:
