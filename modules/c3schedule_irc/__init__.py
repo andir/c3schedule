@@ -634,18 +634,20 @@ class Session:
 
         title = self.title
 
-        return '[{room}] {date} ({duration}) ‒ [{language}/{type}] {bold}{title}{normal} / {persons} ({id})'.format(
+        return '[{room}] {date} ({duration}) ‒ [{language}/{type}/{track}] {bold}{title}{normal} / {persons} ({id})'.format(
             language=self.language,
             type=self.type,
             room=self.room,
             date=date,
             title=title,
             duration=self.duration,
+            track=self.track,
             persons=', '.join([p.public_name for p in self.persons]),
             bold=sopel.formatting.CONTROL_BOLD,
             normal=sopel.formatting.CONTROL_NORMAL,
             id=self.id
         )
+
 
     def format_short(self, color=None):
         hour = '{:02}:{:02}'.format(self.date.hour, self.date.minute)
@@ -654,13 +656,14 @@ class Session:
 
         title = self.title
 
-        return '[{room}] {hour} ({duration}) - [{language}/{type}] {bold}{title}{normal} / {persons} ({id})'.format(
+        return '[{room}] {hour} ({duration}) - [{language}/{type}/{track}] {bold}{title}{normal} / {persons} ({id})'.format(
             language=self.language,
             type=self.type,
             room=self.room,
             hour=hour,
             title=title,
             duration=self.duration,
+            track=self.track,
             persons=', '.join([p.public_name for p in self.persons]),
             bold=sopel.formatting.CONTROL_BOLD,
             normal=sopel.formatting.CONTROL_NORMAL,
@@ -668,7 +671,12 @@ class Session:
         )
 
     def url(self, bot):
-        return bot.config.c3schedule.session_url.format(year=self.date.year, id=self.id)
+        if self.track != 'self organized sessions':
+            return bot.config.c3schedule.session_url.format(year=self.date.year, id=self.id)
+        else:
+            if len(self.urls) == 0:
+                return 'N/A'
+            return ' '.join(self.urls)
 
 
 class Room:
