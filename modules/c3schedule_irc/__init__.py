@@ -245,7 +245,9 @@ def show_info(bot, trigger):
 
         bot.say(session.format_summary())
 
-        bot.say('\t{subtitle} ‒ {abstract}'.format(subtitle=session.subtitle, abstract=session.abstract),
+        if session.subtitle != '' or session.abstract != '':
+            bot.say('\t{subtitle} ‒ {abstract}'.format(
+                subtitle=session.subtitle, abstract=session.abstract),
                 max_messages=2)
         bot.say('More in the Fahrplan at <' + session.url(bot) + '>')
 
