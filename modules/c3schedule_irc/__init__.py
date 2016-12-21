@@ -14,7 +14,7 @@ from sopel.config.types import ValidatedAttribute
 logger = logging.getLogger(__name__)
 
 
-pendulum.set_to_string_format('%d.%m %H:%M')
+pendulum.set_to_string_format('%d.%m. %H:%M')
 
 class ScheduleConfigSection(StaticSection):
     fahrplan_url = ValidatedAttribute('fahrplan_url',
