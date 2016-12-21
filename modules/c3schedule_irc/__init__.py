@@ -80,7 +80,7 @@ def setup(bot):
     bot.memory['c3schedule_current_tracks'] = {}
 
     # FIXME: remove this after initial development phase (pre 33c3)
-    bot.memory['c3schedule_fake_date'] = parse_date('2016-12-27')
+    #bot.memory['c3schedule_fake_date'] = parse_date('2016-12-27')
 
     setup_database(bot.db)
 
@@ -464,18 +464,18 @@ def refresh_schedule(bot, startup=False):
 
         # notify subscribers about changes to their tracks
         for session in changed_sessions:
-            send_session_changed(bot, bot.config.c3schedule.channel, session)
+            #send_session_changed(bot, bot.config.c3schedule.channel, session)
             for account in get_accounts_for_session_id(bot.db, session.id):
                 send_session_changed_to_account(bot, account, session)
 
         for session in missing_sessions:
-            send_session_removed(bot, bot.config.c3schedule.channel, session)
+            #send_session_removed(bot, bot.config.c3schedule.channel, session)
             for account in get_accounts_for_session_id(bot.db, session.id):
                 send_session_removed_to_account(bot, account, session)
 
         if not startup:
             for session in added_sessions:
-                send_session_added(bot, bot.config.c3schedule.channel, session)
+                #send_session_added(bot, bot.config.c3schedule.channel, session)
                 for account in get_accounts_for_session_id(bot.db, session.id):
                     send_session_added_to_account(bot, account, session)
 
