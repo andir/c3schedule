@@ -1,6 +1,7 @@
 import datetime
 import functools
 import logging
+import hashlib
 import threading
 
 import dateutil.parser
@@ -424,24 +425,23 @@ def update_topic(bot):
 def diff_schedules(old_schedule, schedule):
     changed_sessions, added_sessions, missing_sessions = [], [], []
 
-    if old_schedule.version != schedule.version:
-        old_sessions = dict((s.id, s) for s in old_schedule.isessions())
-        sessions = dict((s.id, s) for s in schedule.isessions())
+    old_sessions = dict((s.id, s) for s in old_schedule.isessions())
+    sessions = dict((s.id, s) for s in schedule.isessions())
 
-        for session_id, session in old_sessions.items():
-            if session_id not in sessions:
-                missing_sessions.append(session)
+    for session_id, session in old_sessions.items():
+        if session_id not in sessions:
+            missing_sessions.append(session)
 
 
-        for session_id, session in sessions.items():
-            if session_id not in old_sessions:
-                added_sessions.append(session)
+    for session_id, session in sessions.items():
+        if session_id not in old_sessions:
+            added_sessions.append(session)
 
-        for session_id, session in sessions.items():
-            old_session = old_sessions.get(session_id)
-            if old_session:
-                if old_session != session:
-                    changed_sessions.append(session)
+    for session_id, session in sessions.items():
+        old_session = old_sessions.get(session_id)
+        if old_session:
+            if old_session != session:
+                changed_sessions.append(session)
 
     return changed_sessions, added_sessions, missing_sessions
 
@@ -451,10 +451,11 @@ def diff_schedules(old_schedule, schedule):
 @sopel.module.unblockable
 def refresh_schedule(bot, startup=False):
     old_schedule = bot.memory['c3schedule']
+    old_hashsum = bot.memory.get('c3hashsum')
 
     logger.info('Downloading schedule')
     task = ScheduleDownloadTask(bot.config.c3schedule.url.format(year=get_today(bot).year))
-    schedule = task.run()
+    hashsum, schedule = task.run()
 
     announcer = bot.memory.get('c3schedule_announcer')
 
@@ -462,29 +463,31 @@ def refresh_schedule(bot, startup=False):
         announcer.stop()
 
     if old_schedule and schedule:
-        changed_sessions, added_sessions, missing_sessions = diff_schedules(old_schedule, schedule)
+        if old_schedule.version != schedule.version or hashsum != old_hashsum:
+            changed_sessions, added_sessions, missing_sessions = diff_schedules(old_schedule, schedule)
 
-        # notify subscribers about changes to their tracks
-        for session in changed_sessions:
-            #send_session_changed(bot, bot.config.c3schedule.channel, session)
-            for account in get_accounts_for_session_id(bot.db, session.id):
-                send_session_changed_to_account(bot, account, session)
-
-        for session in missing_sessions:
-            #send_session_removed(bot, bot.config.c3schedule.channel, session)
-            for account in get_accounts_for_session_id(bot.db, session.id):
-                send_session_removed_to_account(bot, account, session)
-
-        if not startup:
-            for session in added_sessions:
-                #send_session_added(bot, bot.config.c3schedule.channel, session)
+            # notify subscribers about changes to their tracks
+            for session in changed_sessions:
+                #send_session_changed(bot, bot.config.c3schedule.channel, session)
                 for account in get_accounts_for_session_id(bot.db, session.id):
-                    send_session_added_to_account(bot, account, session)
+                    send_session_changed_to_account(bot, account, session)
+
+            for session in missing_sessions:
+                #send_session_removed(bot, bot.config.c3schedule.channel, session)
+                for account in get_accounts_for_session_id(bot.db, session.id):
+                    send_session_removed_to_account(bot, account, session)
+
+            if not startup:
+                for session in added_sessions:
+                    #send_session_added(bot, bot.config.c3schedule.channel, session)
+                    for account in get_accounts_for_session_id(bot.db, session.id):
+                        send_session_added_to_account(bot, account, session)
 
     if schedule is None:
         schedule = old_schedule
 
     bot.memory['c3schedule'] = schedule
+    bot.memory['c3hashsum'] = hashsum
 
     if schedule:
         announcer = bot.memory['c3schedule_announcer'] = AnnoucementScheduler(bot)
@@ -799,13 +802,15 @@ class ScheduleDownloadTask:
             return None
         else:
             try:
-                schedule_json = response.json()['schedule']
+                hashsum = hashlib.md5(response.json).hexdigest()
+                response_json = response.json()
+                schedule_json = response_json['schedule']
             except Exception as e:
                 logger.exception(e)
                 return None
             else:
                 try:
-                    return Schedule.from_json(schedule_json)
+                    return hashsum, Schedule.from_json(schedule_json)
                 except (KeyError, IndexError) as e:
                     logger.exception(e)
                     return None
