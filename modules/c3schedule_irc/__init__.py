@@ -95,10 +95,6 @@ def setup(bot):
 
     refresh_schedule(bot, startup=True)
 
-    for channel in hall_channels.values():
-        bot.join(channel)
-
-
 def require_account(message=None):
     """
     Requires a valid account of the user triggering the command
