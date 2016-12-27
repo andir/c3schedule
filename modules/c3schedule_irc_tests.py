@@ -193,5 +193,4 @@ class TestScheduleDiff(TestCase):
         o2 = Schedule.from_json(old2)
 
         results = diff_schedules(o1, o2)
-        self.assertTrue(False, results)
 
