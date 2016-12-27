@@ -19,6 +19,7 @@ hall_channels = {
     'Saal 2': '#33c3-hall-2',
     'Saal 6': '#33c3-hall-6',
     'Saal G': '#33c3-hall-g',
+    'Assembly:Freifunk': '#freifunk',
 }
 
 pendulum.set_to_string_format('%d.%m. %H:%M')
