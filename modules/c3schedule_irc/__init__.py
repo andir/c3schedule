@@ -408,6 +408,9 @@ def announce_start(bot, session):
 
     bot.msg(bot.config.c3schedule.channel, msg)
 
+    if session.room in hall_channels:
+        bot.msg(hall_channels[session.room], msg)
+
     for account in get_accounts_for_session_id(bot.db, session.id):
         for nick in get_nicks_for_account(bot, account):
             bot.msg(nick, msg)
