@@ -525,7 +525,7 @@ def send_session_changed_to_account(bot, account, session):
 def send_session_changed(bot, to, session):
     title = session.title
     id = session.id
-    url = bot.config.c3schedule.session_url.format(year=get_today(bot).year, id=id)
+    url = session.url(bot)
 
     bot.msg(to, 'The session \'{title}\' ({id}) has been changed. Please check the website for details: {url}'.format(
         title=title, id=id, url=url
