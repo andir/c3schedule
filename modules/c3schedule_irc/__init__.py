@@ -391,6 +391,8 @@ def announce_scheduled_start(bot, session):
 
     if session.room in hall_channels:
         bot.msg(hall_channels[session.room], msg)
+    else:
+        logger.info('%s (%s) not in hall_channels', session.room, type(session.room))
 
     for account in get_accounts_for_session_id(bot.db, session.id):
         for nick in get_nicks_for_account(bot, account):
@@ -398,14 +400,14 @@ def announce_scheduled_start(bot, session):
 
 
 def announce_start(bot, session):
-    diff = session.date - get_now(bot)
-
     msg = 'NOW ' + session.format_short(color=sopel.formatting.colors.RED)
 
     bot.msg(bot.config.c3schedule.channel, msg)
 
     if session.room in hall_channels:
         bot.msg(hall_channels[session.room], msg)
+    else:
+        logger.info('%s (%s) not in hall_channels', session.room, type(session.room))
 
     for account in get_accounts_for_session_id(bot.db, session.id):
         for nick in get_nicks_for_account(bot, account):
