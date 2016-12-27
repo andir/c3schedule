@@ -19,6 +19,6 @@ pid_dir=.
 homedir=.
 extra=modules/
 
-channels=#scheduletest
+channels=#scheduletest,#33c3-hall-1-test,#33c3-hall-2,#33c3-hall-6-test,#33c3-hall-g-test
 
 prefix=\.
