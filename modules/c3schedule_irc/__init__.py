@@ -15,10 +15,10 @@ from sopel.config.types import ValidatedAttribute
 logger = logging.getLogger(__name__)
 
 hall_channels = {
-    'Sall 1': '#33c3-hall-1',
-    'Sall 2': '#33c3-hall-2',
-    'Sall 6': '#33c3-hall-6',
-    'Sall G': '#33c3-hall-g',
+    'Saal 1': '#33c3-hall-1',
+    'Saal 2': '#33c3-hall-2',
+    'Saal 6': '#33c3-hall-6',
+    'Saal G': '#33c3-hall-g',
 }
 
 pendulum.set_to_string_format('%d.%m. %H:%M')
