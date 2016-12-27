@@ -14,6 +14,12 @@ from sopel.config.types import ValidatedAttribute
 
 logger = logging.getLogger(__name__)
 
+hall_channels = {
+    'Sall 1': '#33c3-hall-1',
+    'Sall 2': '#33c3-hall-2',
+    'Sall 6': '#33c3-hall-6',
+    'Sall G': '#33c3-hall-g',
+}
 
 pendulum.set_to_string_format('%d.%m. %H:%M')
 
@@ -88,6 +94,9 @@ def setup(bot):
     setup_database(bot.db)
 
     refresh_schedule(bot, startup=True)
+
+    for channel in hall_channels.values():
+        bot.join(channel)
 
 
 def require_account(message=None):
@@ -383,6 +392,9 @@ def announce_scheduled_start(bot, session):
         color=color) + ' in ' + sopel.formatting.CONTROL_BOLD + pdiff.in_words() + sopel.formatting.CONTROL_NORMAL
 
     bot.msg(bot.config.c3schedule.channel, msg)
+
+    if session.room in hall_channels:
+        bot.msg(hall_channels[session.room], msg)
 
     for account in get_accounts_for_session_id(bot.db, session.id):
         for nick in get_nicks_for_account(bot, account):
@@ -802,7 +814,7 @@ class ScheduleDownloadTask:
             return None
         else:
             try:
-                hashsum = hashlib.md5(response.json).hexdigest()
+                hashsum = hashlib.md5(response.content).hexdigest()
                 response_json = response.json()
                 schedule_json = response_json['schedule']
             except Exception as e:

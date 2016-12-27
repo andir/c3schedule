@@ -1,7 +1,8 @@
+import json
 from copy import deepcopy
 from unittest import TestCase
 
-from c3schedule_irc import Schedule, diff_schedules
+from c3schedule_irc import Schedule, diff_schedules, ScheduleDownloadTask
 
 
 class TestScheduleDiff(TestCase):
@@ -165,3 +166,32 @@ class TestScheduleDiff(TestCase):
         self.assertEqual(len(added), 0)
         self.assertEqual(len(missing), 0)
         self.assertEqual(len(changed), 1)
+
+    def test_donload(self):
+        url = 'https://raw.githubusercontent.com/voc/33C3_schedule/master/everything.schedule.json'
+
+        task = ScheduleDownloadTask(url)
+        hashsum, schedule = task.run()
+        task = ScheduleDownloadTask(url)
+        hashsum2, schedule2 = task.run()
+
+        self.assertEqual(hashsum, hashsum2)
+        results = diff_schedules(schedule, schedule2)
+        for result in results:
+            self.assertEqual(len(result), 0)
+
+
+
+    def test_load_old_schedule_equal(self):
+        with open('../old1.json', 'r') as fh:
+            old1 = json.loads(fh.read())['schedule']
+
+        with open('../old2.json', 'r') as fh:
+            old2 = json.loads(fh.read())['schedule']
+
+        o1 = Schedule.from_json(old1)
+        o2 = Schedule.from_json(old2)
+
+        results = diff_schedules(o1, o2)
+        self.assertTrue(False, results)
+
