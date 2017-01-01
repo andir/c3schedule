@@ -15,11 +15,11 @@ from sopel.config.types import ValidatedAttribute
 logger = logging.getLogger(__name__)
 
 hall_channels = {
-    'Saal 1': '#33c3-hall-1',
-    'Saal 2': '#33c3-hall-2',
-    'Saal 6': '#33c3-hall-6',
-    'Saal G': '#33c3-hall-g',
-    'Assembly:Freifunk': '#freifunk',
+#    'Saal 1': '#33c3-hall-1',
+#    'Saal 2': '#33c3-hall-2',
+#    'Saal 6': '#33c3-hall-6',
+#    'Saal G': '#33c3-hall-g',
+#    'Assembly:Freifunk': '#freifunk',
 }
 
 pendulum.set_to_string_format('%d.%m. %H:%M')
@@ -32,7 +32,7 @@ class ScheduleConfigSection(StaticSection):
                                      default='https://fahrplan.events.ccc.de/congress/{year}/Fahrplan/events/{id}.html')
     topic_template = ValidatedAttribute('topic_template',
                                         default='{acronym} - {title} | {start} -> {end} | Day {dayN} | {url} | Query c3schedule with .help/.subscribe/.unsubscribe/.info/.schedule/.search/.nextup')
-    channel = ValidatedAttribute('channel', default="#33c3-schedule")
+    channel = ValidatedAttribute('channel', default="#34c3-schedule")
 
 
 def configure(config):
