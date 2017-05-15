@@ -801,7 +801,7 @@ class Schedule:
     @classmethod
     def from_json(cls, schedule_json):
         conference = Conference.from_json(schedule_json['conference'])
-        return cls(schedule_json['version'], conference)
+        return cls(schedule_json.get('version', 'none'), conference)
 
 
 class ScheduleDownloadTask:
