@@ -4,6 +4,7 @@ import logging
 import hashlib
 import threading
 
+import jinja2
 import dateutil.parser
 import pendulum
 import requests
@@ -26,12 +27,12 @@ pendulum.set_to_string_format('%d.%m. %H:%M')
 
 class ScheduleConfigSection(StaticSection):
     fahrplan_url = ValidatedAttribute('fahrplan_url',
-                                      default="https://fahrplan.events.ccc.de/congress/{year}/Fahrplan/")
-    url = ValidatedAttribute('url', default="https://fahrplan.events.ccc.de/congress/{year}/Fahrplan/schedule.json")
+                                      default="https://fahrplan.events.ccc.de/congress/{{year}}/Fahrplan/")
+    url = ValidatedAttribute('url', default="https://fahrplan.events.ccc.de/congress/{{year}}/Fahrplan/schedule.json")
     session_url = ValidatedAttribute('session_url',
-                                     default='https://fahrplan.events.ccc.de/congress/{year}/Fahrplan/events/{id}.html')
+                                     default='https://fahrplan.events.ccc.de/congress/{{year}}/Fahrplan/events/{{id}}.html')
     topic_template = ValidatedAttribute('topic_template',
-                                        default='{acronym} - {title} | {start} -> {end} | Day {dayN} | {url} | Query c3schedule with .help/.subscribe/.unsubscribe/.info/.schedule/.search/.nextup')
+                                        default='{{acronym}} - {{title}} | {{start}} -> {{end}} | Day {{dayN}} | {{url}} | Query c3schedule with .help/.subscribe/.unsubscribe/.info/.schedule/.search/.nextup')
     channel = ValidatedAttribute('channel', default="#34c3-schedule")
 
 
@@ -57,6 +58,9 @@ def setup_database(db):
         'CREATE UNIQUE INDEX c3schedule_subcsription_limit ON c3schedule_subscriptions(nickserv_account, session_id);')
     db.execute('CREATE INDEX c3schedule_subscription_session_idx ON c3schedule_subscriptions (session_id);')
 
+
+def render_jinja(template, **kwargs):
+    return jinja2.Environment().from_string(template).render(**kwargs)
 
 def get_accounts_for_session_id(db, session_id):
     result = db.execute('SELECT nickserv_account FROM c3schedule_subscriptions WHERE session_id = ?', [session_id])
@@ -425,11 +429,11 @@ def update_topic(bot):
 
     schedule = bot.memory['c3schedule']
 
-    topic = bot.config.c3schedule.topic_template.format(
+    topic = render_jinja(bot.config.c3schedule.topic_template,
         acronym=schedule.conference.acronym, title=schedule.conference.title, start=schedule.conference.start,
         end=schedule.conference.end,
         dayN=dayN,
-        url=bot.config.c3schedule.fahrplan_url.format(year=schedule.conference.start.year)
+        url=render_jinja(bot.config.c3schedule.fahrplan_url, year=schedule.conference.start.year)
     )
 
     if bot.channels[bot.config.c3schedule.channel].topic != topic:
@@ -468,7 +472,7 @@ def refresh_schedule(bot, startup=False):
     old_hashsum = bot.memory.get('c3hashsum')
 
     logger.info('Downloading schedule')
-    task = ScheduleDownloadTask(bot.config.c3schedule.url.format(year=get_today(bot).year))
+    task = ScheduleDownloadTask(render_jinja(bot.config.c3schedule.url, year=get_today(bot).year))
     hashsum, schedule = task.run()
 
     announcer = bot.memory.get('c3schedule_announcer')
@@ -693,7 +697,7 @@ class Session:
 
     def url(self, bot):
         if self.track != 'self organized sessions':
-            return bot.config.c3schedule.session_url.format(year=self.date.year, id=self.id)
+            return render_jinja(bot.config.c3schedule.session_url, year=self.date.year, id=self.id)
         else:
             if len(self.links) == 0:
                 return 'N/A'
