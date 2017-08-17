@@ -658,6 +658,15 @@ class Session:
                    session_json.get('links', []),
                    session_json.get('attachments', []))
 
+    def _format_track(self):
+        if self.track:
+            track = '/{}'.format(self.track)
+        else:
+            track = ''
+
+        return track
+
+
     def format_summary(self, color=None):
         date = str(self.date)
         if color:
@@ -665,14 +674,15 @@ class Session:
 
         title = self.title
 
-        return '[{room}] {date} ({duration}) ‒ [{language}/{type}/{track}] {bold}{title}{normal} / {persons} ({id})'.format(
+
+        return '[{room}] {date} ({duration}) ‒ [{language}/{type}{track}] {bold}{title}{normal} / {persons} ({id})'.format(
             language=self.language,
             type=self.type,
             room=self.room,
             date=date,
             title=title,
             duration=self.duration,
-            track=self.track,
+            track=self._format_track(),
             persons=', '.join([p.public_name for p in self.persons]),
             bold=sopel.formatting.CONTROL_BOLD,
             normal=sopel.formatting.CONTROL_NORMAL,
@@ -687,14 +697,14 @@ class Session:
 
         title = self.title
 
-        return '[{room}] {hour} ({duration}) - [{language}/{type}/{track}] {bold}{title}{normal} / {persons} ({id})'.format(
+        return '[{room}] {hour} ({duration}) - [{language}/{type}{track}] {bold}{title}{normal} / {persons} ({id})'.format(
             language=self.language,
             type=self.type,
             room=self.room,
             hour=hour,
             title=title,
             duration=self.duration,
-            track=self.track,
+            track=self._format_track(),
             persons=', '.join([p.public_name for p in self.persons]),
             bold=sopel.formatting.CONTROL_BOLD,
             normal=sopel.formatting.CONTROL_NORMAL,
