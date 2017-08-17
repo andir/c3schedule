@@ -592,7 +592,7 @@ class Person:
 
     @classmethod
     def from_json(cls, person_json):
-        return Person(person_json['id'], person_json.get('full_public_name', person_json.get('public_name', 'N/A')))
+        return Person(person_json['id'], person_json.get('full_public_name', person_json.get('public_name', person_json.get('name', 'N/A'))))
 
 
 class Session:
