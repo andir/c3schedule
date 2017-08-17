@@ -568,8 +568,14 @@ def parse_date(s):
 
 
 def parse_duration(s):
-    hours, minutes = s.split(':')
-    return pendulum.Interval.instance(datetime.timedelta(hours=int(hours), minutes=int(minutes)))
+    parts = s.split(':')
+    days = 0
+    if len(parts) == 2:
+       hours, minutes = parts
+    elif len(parts) == 3:
+       days, hours, minutes = parts
+
+    return pendulum.Interval.instance(datetime.timedelta(days=int(days), hours=int(hours), minutes=int(minutes)))
 
 
 def parse_day(s):
