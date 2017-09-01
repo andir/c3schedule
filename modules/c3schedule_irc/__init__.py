@@ -163,6 +163,7 @@ def search_session(bot, trigger):
 
     if search_string is None:
         bot.say('Usage: .search <term>')
+        bot.say('If you include the string `do_not_record` it will match talks that have that flag set.')
         return
 
     schedule = bot.memory['c3schedule']
@@ -806,11 +807,17 @@ class Schedule:
     def search_sessions(self, search_string, max_results=10):
         search_string = search_string.lower()
         sessions = []
+        do_not_record = False
+        if 'do_not_record' in search_string:
+            do_not_record = True
+            search_string = search_string.replace('do_not_record', '')
+
         for session in self.isessions():
             if search_string in session.title.lower() or \
                             search_string in session.description.lower() or \
                             search_string in session.abstract.lower() or \
-                    any(search_string in p.public_name.lower() for p in session.persons):
+                    any(search_string in p.public_name.lower() for p in session.persons) or \
+                    do_not_record and session.do_not_record:
                 sessions.append(session)
 
                 if len(sessions) >= max_results:
