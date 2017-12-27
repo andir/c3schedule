@@ -33,6 +33,12 @@ class ScheduleConfigSection(StaticSection):
                                      default='https://fahrplan.events.ccc.de/congress/{{year}}/Fahrplan/events/{{id}}.html')
     topic_template = ValidatedAttribute('topic_template',
                                         default='{{acronym}} - {{title}} | {{start}} -> {{end}} | Day {{dayN}} | {{url}} | Query c3schedule with .help/.subscribe/.unsubscribe/.info/.schedule/.search/.nextup')
+    channel_topic_template = ValidatedAttribute('channel_topic_template',
+            default='{{ session.room }}{% if hall %} ({{ hall }}){% endif %} | {{ session.title }} ' +
+                    '{% if session.url != "N/A" %}{{session.url}}{% endif %} | ' +
+                    '{%if angel %}SA: {{ angel }} |{% endif %}{% if stream_url %} stream: {{ stream_url }}{% endif %}' +
+                    '{{ channel_topic_suffix }}')
+    channel_topic_suffix = ValidatedAttribute('channel_topic_suffix', default='')
     channel = ValidatedAttribute('channel', default="#34c3-schedule")
 
 
@@ -399,7 +405,10 @@ def announce_scheduled_start(bot, session):
     bot.msg(bot.config.c3schedule.channel, msg)
 
     if session.room in hall_channels:
-        bot.msg(hall_channels[session.room], msg)
+        channel = hall_channels[session.room]
+        topic = session.format_channel_topic(bot)
+        bot.msg(channel, msg)
+        set_topic(bot, channel, topic)
     else:
         logger.info('%s (%s) not in hall_channels', session.room, type(session.room))
 
@@ -693,6 +702,17 @@ class Session:
             id=self.id
         )
 
+
+    def format_channel_topic(self, bot):
+        template = bot.config.c3schedule.channel_topic_template
+        suffix_template = bot.config.c3schedule.channel_topic_suffix
+        kwargs = dict(session=self, angel=None)
+        suffix = render_jinja(suffix_template, **kwargs)
+        topic = render_jinja(template,
+            channel_topic_suffix=suffix,
+            **kwargs
+        )
+        return topic
 
     def format_short(self, color=None):
         hour = '{:02}:{:02}'.format(self.date.hour, self.date.minute)
