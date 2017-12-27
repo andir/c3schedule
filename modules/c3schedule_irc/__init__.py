@@ -354,6 +354,9 @@ def set_fake_date(bot, trigger):
                 bot.memory['c3schedule_fake_date'] = date
                 bot.say('Fake date set to %s' % date)
 
+def set_topic(bot, channel, topic):
+    bot.write(('TOPIC', channel + ': ' + topic))
+
 
 def get_conference_day(bot):
     schedule = bot.memory['c3schedule']
@@ -438,7 +441,7 @@ def update_topic(bot):
     )
 
     if bot.channels[bot.config.c3schedule.channel].topic != topic:
-        bot.write(('TOPIC', bot.config.c3schedule.channel + ' :' + topic))
+        set_topic(bot, bot.config.c3schedule.channel, topic)
 
 
 def diff_schedules(old_schedule, schedule):
