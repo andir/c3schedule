@@ -34,10 +34,11 @@ class ScheduleConfigSection(StaticSection):
     topic_template = ValidatedAttribute('topic_template',
                                         default='{{acronym}} - {{title}} | {{start}} -> {{end}} | Day {{dayN}} | {{url}} | Query c3schedule with .help/.subscribe/.unsubscribe/.info/.schedule/.search/.nextup')
     channel_topic_template = ValidatedAttribute('channel_topic_template',
-            default='{{ session.room }}{% if hall %} ({{ hall }}){% endif %} | {{ session.title }} ' +
-                    '{% if session.url != "N/A" %}{{session.url}}{% endif %} | ' +
-                    '{%if angel %}SA: {{ angel }} |{% endif %}{% if stream_url %} stream: {{ stream_url }}{% endif %}' +
+            default='{{ session.room }} | {{ session.title }} ' +
+                    '{% if session.url != "N/A" %}{{ session.url }}{% endif %} | ' +
+                    '{% if angel %}SA: {{ angel }} |{% endif %}{% if stream_url %} stream: {{ stream_url }}{% endif %}' +
                     '{{ channel_topic_suffix }}')
+    stream_url_template = ValidatedAttribute('stream_url_template', default='http://streaming.media.ccc.de/34c3/{{ session.room|lower|replace(' ','') }}')
     channel_topic_suffix = ValidatedAttribute('channel_topic_suffix', default='')
     channel = ValidatedAttribute('channel', default="#34c3-schedule")
 
@@ -703,10 +704,14 @@ class Session:
         )
 
 
+
     def format_channel_topic(self, bot):
         template = bot.config.c3schedule.channel_topic_template
         suffix_template = bot.config.c3schedule.channel_topic_suffix
+        stream_url_template = bot.config.c3schedule.stream_url_template
         kwargs = dict(session=self, angel=None)
+        stream_url = render_jinja(stream_url_template, **kwargs)
+        kwargs['stream_url'] = stream_url
         suffix = render_jinja(suffix_template, **kwargs)
         topic = render_jinja(template,
             channel_topic_suffix=suffix,
