@@ -1,3 +1,4 @@
+import re
 import datetime
 import functools
 import logging
@@ -16,12 +17,12 @@ from sopel.config.types import ValidatedAttribute
 logger = logging.getLogger(__name__)
 
 hall_channels = {
-#    'Saal 1': '#33c3-hall-1',
-#    'Saal 2': '#33c3-hall-2',
-#    'Saal 6': '#33c3-hall-6',
-#    'Saal G': '#33c3-hall-g',
-#    'Assembly:Freifunk': '#freifunk',
+    'Adams':  '#scheduletest-a',
+    'Borg':   '#scheduletest-b',
+    'Clarke': '#scheduletest-c',
 }
+
+signal_angel_pattern = re.compile('| SA: (?P<signal_angel>[^|]+) |')
 
 pendulum.set_to_string_format('%d.%m. %H:%M')
 
@@ -34,11 +35,11 @@ class ScheduleConfigSection(StaticSection):
     topic_template = ValidatedAttribute('topic_template',
                                         default='{{acronym}} - {{title}} | {{start}} -> {{end}} | Day {{dayN}} | {{url}} | Query c3schedule with .help/.subscribe/.unsubscribe/.info/.schedule/.search/.nextup')
     channel_topic_template = ValidatedAttribute('channel_topic_template',
-            default='{{ session.room }} | {{ session.title }} ' +
+            default='{{ session.room }} | ({{session.language}}) {{ session.title }} ' +
                     '{% if session.url != "N/A" %}{{ session.url }}{% endif %} | ' +
                     '{% if angel %}SA: {{ angel }} |{% endif %}{% if stream_url %} stream: {{ stream_url }}{% endif %}' +
                     '{{ channel_topic_suffix }}')
-    stream_url_template = ValidatedAttribute('stream_url_template', default='http://streaming.media.ccc.de/34c3/{{ session.room|lower|replace(' ','') }}')
+    stream_url_template = ValidatedAttribute('stream_url_template', default='http://streaming.media.ccc.de/34c3/{{ session.room|lower|replace(" ","") }}')
     channel_topic_suffix = ValidatedAttribute('channel_topic_suffix', default='')
     channel = ValidatedAttribute('channel', default="#34c3-schedule")
 
@@ -362,7 +363,7 @@ def set_fake_date(bot, trigger):
                 bot.say('Fake date set to %s' % date)
 
 def set_topic(bot, channel, topic):
-    bot.write(('TOPIC', channel + ': ' + topic))
+    bot.write(('TOPIC', channel + ' :' + topic))
 
 
 def get_conference_day(bot):
@@ -407,7 +408,8 @@ def announce_scheduled_start(bot, session):
 
     if session.room in hall_channels:
         channel = hall_channels[session.room]
-        topic = session.format_channel_topic(bot)
+        signal_angel = parse_signal_angel(channel)
+        topic = session.format_channel_topic(bot, angel=signal_angel)
         bot.msg(channel, msg)
         set_topic(bot, channel, topic)
     else:
@@ -416,6 +418,17 @@ def announce_scheduled_start(bot, session):
     for account in get_accounts_for_session_id(bot.db, session.id):
         for nick in get_nicks_for_account(bot, account):
             bot.msg(nick, msg)
+
+
+def parse_signal_angel(channel):
+    # try parsing the current angel
+    signal_angel = False
+
+    m = signal_angel_pattern.match(bot.channels[channel].topic)
+    if m:
+        signal_angel = m.group('signal_angel')
+
+    return signal_angel
 
 
 def announce_start(bot, session):
@@ -705,11 +718,11 @@ class Session:
 
 
 
-    def format_channel_topic(self, bot):
+    def format_channel_topic(self, bot, angel=None):
         template = bot.config.c3schedule.channel_topic_template
         suffix_template = bot.config.c3schedule.channel_topic_suffix
         stream_url_template = bot.config.c3schedule.stream_url_template
-        kwargs = dict(session=self, angel=None)
+        kwargs = dict(session=self, angel=angel)
         stream_url = render_jinja(stream_url_template, **kwargs)
         kwargs['stream_url'] = stream_url
         suffix = render_jinja(suffix_template, **kwargs)

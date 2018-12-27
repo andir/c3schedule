@@ -1,5 +1,5 @@
 -e git+https://github.com/andir/sopel.git#egg=sopel
 requests
 python-dateutil
-pendulum
+pendulum<2
 jinja2
