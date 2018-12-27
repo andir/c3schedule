@@ -20,9 +20,8 @@ hall_channels = {
     'Adams':  '#scheduletest-a',
     'Borg':   '#scheduletest-b',
     'Clarke': '#scheduletest-c',
+    'Djikstra': '#scheduletest-d',
 }
-
-signal_angel_pattern = re.compile('| SA: (?P<signal_angel>[^|]+) |')
 
 pendulum.set_to_string_format('%d.%m. %H:%M')
 
@@ -35,11 +34,14 @@ class ScheduleConfigSection(StaticSection):
     topic_template = ValidatedAttribute('topic_template',
                                         default='{{acronym}} - {{title}} | {{start}} -> {{end}} | Day {{dayN}} | {{url}} | Query c3schedule with .help/.subscribe/.unsubscribe/.info/.schedule/.search/.nextup')
     channel_topic_template = ValidatedAttribute('channel_topic_template',
-            default='{{ session.room }} | ({{session.language}}) {{ session.title }} ' +
-                    '{% if session.url != "N/A" %}{{ session.url }}{% endif %} | ' +
-                    '{% if angel %}SA: {{ angel }} |{% endif %}{% if stream_url %} stream: {{ stream_url }}{% endif %}' +
+            default='{{ "{" }}{{session.room[0]}}{{ "}" }}{{ session.room[1:] }} @ {{ session.date }} | ' +
+                    '{% if angel %}SA: {{ angel }} | {% endif %}' +
+                    '({{session.language}}) {{ session.title }} [{{ session.id }}] {% if session.url(bot) != "N/A" %}{{ session.url(bot) }}{% endif %} | ' +
+                    '{% if stream_url %}Stream: {{ stream_url }}{% endif %}' +
                     '{{ channel_topic_suffix }}')
-    stream_url_template = ValidatedAttribute('stream_url_template', default='http://streaming.media.ccc.de/34c3/{{ session.room|lower|replace(" ","") }}')
+    stream_url_template = ValidatedAttribute('stream_url_template',
+            default='http://streaming.media.ccc.de/35c3/{{ stream_hall }}'
+    )
     channel_topic_suffix = ValidatedAttribute('channel_topic_suffix', default='')
     channel = ValidatedAttribute('channel', default="#34c3-schedule")
 
@@ -408,7 +410,7 @@ def announce_scheduled_start(bot, session):
 
     if session.room in hall_channels:
         channel = hall_channels[session.room]
-        signal_angel = parse_signal_angel(channel)
+        signal_angel = parse_signal_angel(bot, channel)
         topic = session.format_channel_topic(bot, angel=signal_angel)
         bot.msg(channel, msg)
         set_topic(bot, channel, topic)
@@ -420,15 +422,16 @@ def announce_scheduled_start(bot, session):
             bot.msg(nick, msg)
 
 
-def parse_signal_angel(channel):
-    # try parsing the current angel
-    signal_angel = False
+def parse_signal_angel(bot, channel):
+    topic = bot.channels[channel].topic
 
-    m = signal_angel_pattern.match(bot.channels[channel].topic)
-    if m:
-        signal_angel = m.group('signal_angel')
+    parts = [ x.strip() for x in topic.split('|') ]
+    for part in parts:
+        if part.startswith('SA: '):
+            logger.info('part: %s', part)
+            return part[4:]
 
-    return signal_angel
+    return False
 
 
 def announce_start(bot, session):
@@ -722,7 +725,14 @@ class Session:
         template = bot.config.c3schedule.channel_topic_template
         suffix_template = bot.config.c3schedule.channel_topic_suffix
         stream_url_template = bot.config.c3schedule.stream_url_template
-        kwargs = dict(session=self, angel=angel)
+        stream_hall = {
+                "Adams": "halla",
+                "Borg": "hallb",
+                "Clarke": "hallc",
+                "Dijkstra": "halld",
+                "Eliza": "halle"
+        }[self.room]
+        kwargs = dict(session=self, angel=angel, bot=bot, stream_hall=stream_hall)
         stream_url = render_jinja(stream_url_template, **kwargs)
         kwargs['stream_url'] = stream_url
         suffix = render_jinja(suffix_template, **kwargs)
