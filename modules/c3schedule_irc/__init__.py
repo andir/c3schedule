@@ -499,10 +499,10 @@ def refresh_schedule(bot, startup=False):
             changed_sessions, added_sessions, missing_sessions = diff_schedules(old_schedule, schedule)
 
             # notify subscribers about changes to their tracks
-            for session in changed_sessions:
-                send_session_changed(bot, bot.config.c3schedule.channel, session)
-                for account in get_accounts_for_session_id(bot.db, session.id):
-                    send_session_changed_to_account(bot, account, session)
+            #for session in changed_sessions:
+            #    send_session_changed(bot, bot.config.c3schedule.channel, session)
+            #    for account in get_accounts_for_session_id(bot.db, session.id):
+            #        send_session_changed_to_account(bot, account, session)
 
             for session in missing_sessions:
                 send_session_removed(bot, bot.config.c3schedule.channel, session)
