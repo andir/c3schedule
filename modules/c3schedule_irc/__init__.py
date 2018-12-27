@@ -393,12 +393,16 @@ def become(bot, trigger):
     if not old_nick:
         old_nick = parse_signal_angel(bot, channel)
 
+    bot.write(['MODE', channel, '+o', trigger.nick])
+
     if old_nick:
         old_topic = bot.channels[channel].topic
         topic = old_topic.replace('SA: {}'.format(old_nick),
                                   'SA: {}'.format(trigger.nick))
         set_topic(bot, channel, topic)
         bot.reply('topic updated in {}'.format(channel))
+        #bot.write(['MODE', channel, '-o', old_nick])
+
 
     else:
         bot.reply('Topic does not have the | SA: <nick> | pattern?')
