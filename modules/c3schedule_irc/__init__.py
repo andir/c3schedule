@@ -44,6 +44,7 @@ class ScheduleConfigSection(StaticSection):
     )
     channel_topic_suffix = ValidatedAttribute('channel_topic_suffix', default='')
     channel = ValidatedAttribute('channel', default="#34c3-schedule")
+    angel_channel = ValidatedAttribute('angel_channel', default='#signalangels')
 
 
 def configure(config):
@@ -102,6 +103,7 @@ def setup(bot):
 
     bot.memory['c3schedule'] = None
     bot.memory['c3schedule_current_tracks'] = {}
+    bot.memory['c3schedule_angels'] = {}
 
     # FIXME: remove this after initial development phase (pre 33c3)
     #bot.memory['c3schedule_fake_date'] = parse_date('2016-12-27')
@@ -364,8 +366,42 @@ def set_fake_date(bot, trigger):
                 bot.memory['c3schedule_fake_date'] = date
                 bot.say('Fake date set to %s' % date)
 
+
 def set_topic(bot, channel, topic):
     bot.write(('TOPIC', channel + ' :' + topic))
+
+@sopel.module.commands('sa')
+@sopel.module.require_chanmsg()
+def become(bot, trigger):
+    channel = trigger.sender
+    if not trigger.admin and bot.privileges[channel][trigger.nick] < sopel.module.OP:
+        return
+
+    if channel != bot.config.c3schedule.angel_channel:
+        return
+
+
+    arg = trigger.group(2)
+    if not arg or (arg not in hall_channels and arg not in hall_channels.values()):
+        bot.reply('Unknown channel')
+        return
+
+    channel = hall_channels[arg] if arg in hall_channels else arg
+    old_nick = bot.memory['c3schedule_angels'].get(channel)
+    bot.memory['c3schedule_angels'][channel] = trigger.nick
+
+    if not old_nick:
+        old_nick = parse_signal_angel(bot, channel)
+
+    if old_nick:
+        old_topic = bot.channels[channel].topic
+        topic = old_topic.replace('SA: {}'.format(old_nick),
+                                  'SA: {}'.format(trigger.nick))
+        set_topic(bot, channel, topic)
+        bot.reply('topic updated in {}'.format(channel))
+
+    else:
+        bot.reply('Topic does not have the | SA: <nick> | pattern?')
 
 
 def get_conference_day(bot):
@@ -410,7 +446,10 @@ def announce_scheduled_start(bot, session):
 
     if session.room in hall_channels:
         channel = hall_channels[session.room]
-        signal_angel = parse_signal_angel(bot, channel)
+        signal_angel = bot.memory['c3schedule_angels'].get(channel)
+        if not signal_angel:
+            signal_angel = parse_signal_angel(bot, channel)
+
         topic = session.format_channel_topic(bot, angel=signal_angel)
         bot.msg(channel, msg)
         set_topic(bot, channel, topic)
