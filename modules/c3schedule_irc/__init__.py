@@ -774,7 +774,8 @@ class Session:
                 "Clarke": "hallc",
                 "Dijkstra": "halld",
                 "Eliza": "halle"
-        }[self.room]
+                "Chaos West Bühne": "chaoswest",
+        }.get(self.room, self.room)
         kwargs = dict(session=self, angel=angel, bot=bot, stream_hall=stream_hall)
         stream_url = render_jinja(stream_url_template, **kwargs)
         kwargs['stream_url'] = stream_url
