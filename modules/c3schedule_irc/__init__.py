@@ -17,10 +17,14 @@ from sopel.config.types import ValidatedAttribute
 logger = logging.getLogger(__name__)
 
 hall_channels = {
-    'Adams':  '#scheduletest-a',
-    'Borg':   '#scheduletest-b',
-    'Clarke': '#scheduletest-c',
-    'Djikstra': '#scheduletest-d',
+#    'Curie': '#camp-curie',
+#    'Meitner': '#camp-meitner',
+    'Adams':  '#36c3-hall-a',
+    'Borg':   '#36c3-hall-b',
+    'Clarke': '#36c3-hall-c',
+    'Dijkstra': '#36c3-hall-d',
+    'Eliza': '#36c3-hall-e',
+    'Chaos West Bühne': '#chaoswest-stage',
 }
 
 pendulum.set_to_string_format('%d.%m. %H:%M')
@@ -40,10 +44,10 @@ class ScheduleConfigSection(StaticSection):
                     '{% if stream_url %}Stream: {{ stream_url }}{% endif %}' +
                     '{{ channel_topic_suffix }}')
     stream_url_template = ValidatedAttribute('stream_url_template',
-            default='http://streaming.media.ccc.de/35c3/{{ stream_hall }}'
+            default='https://streaming.media.ccc.de/36c3/{{ stream_hall }}'
     )
     channel_topic_suffix = ValidatedAttribute('channel_topic_suffix', default='')
-    channel = ValidatedAttribute('channel', default="#34c3-schedule")
+    channel = ValidatedAttribute('channel', default="#36c3-schedule")
     angel_channel = ValidatedAttribute('angel_channel', default='#signalangels')
 
 
@@ -380,13 +384,14 @@ def become(bot, trigger):
     if channel != bot.config.c3schedule.angel_channel:
         return
 
+    lower_hall_channels = dict((k.lower(), v) for (k,v) in hall_channels.items())
 
     arg = trigger.group(2)
-    if not arg or (arg not in hall_channels and arg not in hall_channels.values()):
+    if not arg or (arg.lower() not in lower_hall_channels and arg not in hall_channels.values()):
         bot.reply('Unknown channel')
         return
 
-    channel = hall_channels[arg] if arg in hall_channels else arg
+    channel = lower_hall_channels[arg.lower()] if arg.lower() in lower_hall_channels else arg
     old_nick = bot.memory['c3schedule_angels'].get(channel)
     bot.memory['c3schedule_angels'][channel] = trigger.nick
 
@@ -769,13 +774,16 @@ class Session:
         suffix_template = bot.config.c3schedule.channel_topic_suffix
         stream_url_template = bot.config.c3schedule.stream_url_template
         stream_hall = {
+#                'Curie': 'tent-1',
+#                'Meitner': 'tent-2',
                 "Adams": "halla",
                 "Borg": "hallb",
                 "Clarke": "hallc",
                 "Dijkstra": "halld",
-                "Eliza": "halle"
+                "Eliza": "halle",
                 "Chaos West Bühne": "chaoswest",
         }.get(self.room, self.room)
+        logger.info('Room: %s Stream Hall: %s', self.room, stream_hall)
         kwargs = dict(session=self, angel=angel, bot=bot, stream_hall=stream_hall)
         stream_url = render_jinja(stream_url_template, **kwargs)
         kwargs['stream_url'] = stream_url
