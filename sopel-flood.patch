@@ -1,0 +1,15 @@
+diff --git a/sopel/bot.py b/sopel/bot.py
+index 5994c21f..52ea4205 100644
+--- a/sopel/bot.py
++++ b/sopel/bot.py
+@@ -315,7 +315,8 @@ class Sopel(irc.Bot):
+                     penalty = float(max(0, len(text) - 40)) / 70
+                     wait = min(0.8 + penalty, 2)  # Never wait more than 2 seconds
+                     if elapsed < wait:
+-                        time.sleep(wait - elapsed)
++                        pass
++                        #time.sleep(wait - elapsed)
+ 
+                 # Loop detection
+                 messages = [m[1] for m in self.stack[recipient_id][-8:]]
+

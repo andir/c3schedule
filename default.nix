@@ -5,6 +5,10 @@ let
       doCheck = false;
       buildInputs = (old.buildInputs or []) ++ [ self.pytestrunner ];
     });
+
+    sopel = self: super: drv: drv.overrideAttrs (old: {
+      patches = [ ./sopel-flood.patch ];
+    });
   };
   env = pkgs.poetry2nix.mkPoetryEnv {
     poetrylock = ./poetry.lock;
