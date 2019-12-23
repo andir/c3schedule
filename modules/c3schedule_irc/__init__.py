@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 hall_channels = {
 #    'Curie': '#camp-curie',
 #    'Meitner': '#camp-meitner',
-    'Adams':  '#36c3-hall-a',
+    'Ada':  '#36c3-hall-a',
     'Borg':   '#36c3-hall-b',
     'Clarke': '#36c3-hall-c',
     'Dijkstra': '#36c3-hall-d',
