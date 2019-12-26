@@ -25,6 +25,7 @@ hall_channels = {
     'Dijkstra': '#36c3-hall-d',
     'Eliza': '#36c3-hall-e',
     'Chaos West Bühne': '#chaoswest-stage',
+    'OIO Stage': '#oio-stage',
 }
 
 pendulum.set_to_string_format('%d.%m. %H:%M')
@@ -776,12 +777,13 @@ class Session:
         stream_hall = {
 #                'Curie': 'tent-1',
 #                'Meitner': 'tent-2',
-                "Adams": "halla",
+                "Ada": "halla",
                 "Borg": "hallb",
                 "Clarke": "hallc",
                 "Dijkstra": "halld",
                 "Eliza": "halle",
                 "Chaos West Bühne": "chaoswest",
+                'OIO Stage': 'oio-stage',
         }.get(self.room, self.room)
         logger.info('Room: %s Stream Hall: %s', self.room, stream_hall)
         kwargs = dict(session=self, angel=angel, bot=bot, stream_hall=stream_hall)
