@@ -783,7 +783,7 @@ class Session:
                 "Dijkstra": "halld",
                 "Eliza": "halle",
                 "Chaos West Bühne": "chaoswest",
-                'OIO Stage': 'oio-stage',
+                'OIO Stage': 'oio',
         }.get(self.room, self.room)
         logger.info('Room: %s Stream Hall: %s', self.room, stream_hall)
         kwargs = dict(session=self, angel=angel, bot=bot, stream_hall=stream_hall)
