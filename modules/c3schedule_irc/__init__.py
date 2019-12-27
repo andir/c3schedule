@@ -24,7 +24,7 @@ hall_channels = {
     'Clarke': '#36c3-hall-c',
     'Dijkstra': '#36c3-hall-d',
     'Eliza': '#36c3-hall-e',
-    'Chaos West Bühne': '#chaoswest-stage',
+    'Chaos-West Bühne': '#chaoswest-stage',
     'OIO Stage': '#oio-stage',
 }
 
@@ -782,7 +782,7 @@ class Session:
                 "Clarke": "hallc",
                 "Dijkstra": "halld",
                 "Eliza": "halle",
-                "Chaos West Bühne": "chaoswest",
+                "Chaos-West Bühne": "chaoswest",
                 'OIO Stage': 'oio',
         }.get(self.room, self.room)
         logger.info('Room: %s Stream Hall: %s', self.room, stream_hall)
