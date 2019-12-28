@@ -913,15 +913,21 @@ class Schedule:
         search_string = search_string.lower()
         sessions = []
         do_not_record = False
+
+        def to_str(s):
+            if s:
+                return str(s)
+            return ""
+
         if 'do_not_record' in search_string:
             do_not_record = True
             search_string = search_string.replace('do_not_record', '')
 
         for session in self.isessions():
-            if search_string in session.title.lower() or \
-                            search_string in session.description.lower() or \
-                            search_string in session.abstract.lower() or \
-                    any(search_string in p.public_name.lower() for p in session.persons) or \
+            if search_string in to_str(session.title).lower() or \
+                            search_string in to_str(session.description).lower() or \
+                            search_string in to_str(session.abstract).lower() or \
+                    any(search_string in to_str(p.public_name).lower() for p in session.persons) or \
                     do_not_record and session.do_not_record:
                 sessions.append(session)
 
