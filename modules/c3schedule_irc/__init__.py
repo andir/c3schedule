@@ -515,8 +515,13 @@ def update_topic(bot):
         url=render_jinja(bot.config.c3schedule.fahrplan_url, year=schedule.conference.start.year)
     )
 
-    if bot.channels[bot.config.c3schedule.channel].topic != topic:
-        set_topic(bot, bot.config.c3schedule.channel, topic)
+    try:
+        current_topic = bot.channels[bot.config.c3schedule.channel].topic
+    except KeyError:
+        logger.info("topic of %s not yet known. Retrying in 15s.", bot.config.c3schedule.channel)
+    else:
+        if current_topic != topic:
+            set_topic(bot, bot.config.c3schedule.channel, topic)
 
 
 def diff_schedules(old_schedule, schedule):
