@@ -109,6 +109,7 @@ def setup(bot):
     bot.memory['c3schedule'] = None
     bot.memory['c3schedule_current_tracks'] = {}
     bot.memory['c3schedule_angels'] = {}
+    bot.memory['c3schedule_questions'] = {}
 
     # FIXME: remove this after initial development phase (pre 33c3)
     #bot.memory['c3schedule_fake_date'] = parse_date('2016-12-27')
@@ -375,6 +376,91 @@ def set_fake_date(bot, trigger):
 def set_topic(bot, channel, topic):
     bot.write(('TOPIC', channel + ' :' + topic))
 
+
+def hall_channel_from_str(arg):
+    lower_hall_channels = dict((k.lower(), v) for (k,v) in hall_channels.items())
+
+    if not arg or (arg.lower() not in lower_hall_channels and arg not in hall_channels.values()):
+        return None
+
+    channel = lower_hall_channels[arg.lower()] if arg.lower() in lower_hall_channels else arg
+
+    return channel
+
+@sopel.module.commands('question')
+@sopel.module.require_chanmsg()
+@sopel.module.rate(user=2)
+def ask_question(bot, trigger):
+    channel = trigger.sender
+
+    if channel in hall_channels.keys():
+        logger.info("Got question outside of hall channel. Ignoring.")
+        bot.reply('You can only ask questions in hall channels.')
+        return
+
+    question = trigger.group(3)
+    if question is None or question == "":
+        bot.reply('Usage: .question <question>')
+        return
+
+    questions = bot.memory['c3schedule_questions'].get(channel, [])
+    questions += [ (trigger.nick, question) ]
+    bot.memory['c3schedule_questions'][channel] = questions
+    bot.reply('Question noted')
+
+
+@sopel.module.commands('questions')
+@sopel.module.require_privmsg()
+def list_questions(bot, trigger):
+    channel = trigger.group(3)
+
+    if channel is None:
+        bot.reply('Usage: .questions <#channel>')
+        return
+
+    channel = hall_channel_from_str(channel)
+
+    if channel is None:
+        bot.reply('Unknown hall channel')
+        return
+
+    questions = bot.memory['c3schedule_questions'].get(channel, [])
+    for (i, (user, question)) in enumerate(questions):
+        bot.reply('[{i}] {user} — {question}'.format(i=i, user=user, question=question))
+    bot.reply('End of list ({count} questions)'.format(count=len(questions)))
+
+
+@sopel.module.commands('clearquestions')
+@sopel.module.require_privmsg()
+def clear_questions(bot, trigger):
+    channel = trigger.sender
+
+    q_channel = trigger.group(3)
+
+    if q_channel is None:
+        bot.reply('Usage: .clearquestions <#channel>')
+        return
+
+    channel = hall_channel_from_str(q_channel)
+
+    if channel is None:
+        bot.reply('Unknown hall channel')
+        return
+
+    is_current_sa = bot.memory['c3schedule_angels'].get(channel) == trigger.nick
+    is_some_sa = trigger.nick in bot.privileges[bot.config.c3schedule.angel_channel] and \
+            bot.privileges[bot.config.c3schedule.angel_channel][trigger.nick] >= sopel.module.OP
+
+    if not trigger.admin and bot.privileges[channel][trigger.nick] < sopel.module.OP and not is_current_sa and not is_some_sa:
+        return
+
+
+    if channel in bot.memory['c3schedule_questions']:
+        bot.memory['c3schedule_questions'] = []
+
+    bot.reply('Questions cleared')
+
+
 @sopel.module.commands('sa')
 @sopel.module.require_chanmsg()
 def become(bot, trigger):
@@ -385,14 +471,13 @@ def become(bot, trigger):
     if channel != bot.config.c3schedule.angel_channel:
         return
 
-    lower_hall_channels = dict((k.lower(), v) for (k,v) in hall_channels.items())
-
     arg = trigger.group(2)
-    if not arg or (arg.lower() not in lower_hall_channels and arg not in hall_channels.values()):
-        bot.reply('Unknown channel')
+    channel = hall_channel_from_str(arg)
+
+    if channel is None:
+        bot.reply('Unknown hall channel')
         return
 
-    channel = lower_hall_channels[arg.lower()] if arg.lower() in lower_hall_channels else arg
     old_nick = bot.memory['c3schedule_angels'].get(channel)
     bot.memory['c3schedule_angels'][channel] = trigger.nick
 
