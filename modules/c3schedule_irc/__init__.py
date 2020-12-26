@@ -17,15 +17,25 @@ from sopel.config.types import ValidatedAttribute
 logger = logging.getLogger(__name__)
 
 hall_channels = {
-#    'Curie': '#camp-curie',
-#    'Meitner': '#camp-meitner',
-    'Ada':  '#36c3-hall-a',
-    'Borg':   '#36c3-hall-b',
-    'Clarke': '#36c3-hall-c',
-    'Dijkstra': '#36c3-hall-d',
-    'Eliza': '#36c3-hall-e',
-    'Chaos-West Bühne': '#chaoswest-stage',
-    'OIO Stage': '#oio-stage',
+    'rC1':  '#rC3-one',
+    'rC2':  '#rC3-two',
+    'chaosstudio-hamburg':   '#rc3-csh',
+    'restrealitaet': '#rC3-restrealitaet',
+    'r3s - Monheim/Rhein': '#rc3-r3s',
+    'franconiannet': '#rc3-franconiannet',
+    'Chaos-West TV': '#rc3-cwtv',
+    'hacc München / about:future': '#rc3-hacc',
+    'xHain Berlin': '#rc3-xhain',
+    #    'c-base Berlin': '#rc3-', # :'(
+    'ChaosTrawler': '#rc3-chaostrawler',
+    'ChaosZone TV Stream': '#rc3-chaoszone',
+    'ChaosZone Workshops': '#rc3-chaoszone',
+    'OIO/A:F Bühne': '#rc3-oio',
+    'OIO/A:F Workshop': '#rc3-oio',
+    'SZ Bühne': '#rc3-sendezentrum',
+    'Wikipaka': '#rc3-wikipaka',
+    'Wikipaka Meetups': '#rc3-wikipaka',
+    'Bitwäscherei Zürich': '#rc3-bitwaescherei',
 }
 
 pendulum.set_to_string_format('%d.%m. %H:%M')
