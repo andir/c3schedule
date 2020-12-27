@@ -574,7 +574,7 @@ def announce_scheduled_start(bot, session):
 def parse_signal_angel(bot, channel):
     topic = get_topic(bot, channel)
 
-    parts = [ x.strip() for x in topic.split('|') ]
+    parts = [x.strip() for x in topic.split('|')]
     for part in parts:
         if part.startswith('SA: '):
             logger.info('part: %s', part)
@@ -880,15 +880,7 @@ class Session:
         suffix_template = bot.config.c3schedule.channel_topic_suffix
         stream_url_template = bot.config.c3schedule.stream_url_template
         stream_hall = {
-#                'Curie': 'tent-1',
-#                'Meitner': 'tent-2',
-                "Ada": "halla",
-                "Borg": "hallb",
-                "Clarke": "hallc",
-                "Dijkstra": "halld",
-                "Eliza": "halle",
-                "Chaos-West Bühne": "chaoswest",
-                'OIO Stage': 'oio',
+                "OIO/A:F Bühne": "oio",
         }.get(self.room, self.room)
         logger.info('Room: %s Stream Hall: %s', self.room, stream_hall)
         kwargs = dict(session=self, angel=angel, bot=bot, stream_hall=stream_hall)
