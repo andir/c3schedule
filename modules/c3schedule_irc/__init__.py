@@ -50,7 +50,7 @@ class ScheduleConfigSection(StaticSection):
                                         default='{{acronym}} - {{title}} | {{start}} -> {{end}} | Day {{dayN}} | {{url}} | Query c3schedule with .help/.subscribe/.unsubscribe/.info/.schedule/.search/.nextup')
     channel_topic_template = ValidatedAttribute('channel_topic_template',
             default='{{ "{" }}{{session.room[0]}}{{ "}" }}{{ session.room[1:] }} @ {{ session.date }} | ' +
-                    '{% if angel %}SA: {{ angel }} | {% endif %}' +
+                    '{% if angel %}Signal: {{ angel }} | {% endif %}' +
                     '({{session.language}}) {{ session.title }} [{{ session.id }}] {% if session.url(bot) != "N/A" %}{{ session.url(bot) }}{% endif %} | ' +
                     '{% if stream_url %}Stream: {{ stream_url }}{% endif %}' +
                     '{{ channel_topic_suffix }}')
@@ -505,13 +505,13 @@ def become(bot, trigger):
 
     if old_nick:
         old_topic = get_topic(bot, channel)
-        topic = old_topic.replace('SA: {}'.format(old_nick),
-                                  'SA: {}'.format(trigger.nick))
+        topic = old_topic.replace('Signal: {}'.format(old_nick),
+                                  'Signal: {}'.format(trigger.nick))
         set_topic(bot, channel, topic)
         bot.reply('topic updated in {}'.format(channel))
         #bot.write(['MODE', channel, '-o', old_nick])
     else:
-        bot.reply('Topic does not have the | SA: <nick> | pattern?')
+        bot.reply('Topic does not have the | Signal: <nick> | pattern?')
 
 
 def get_conference_day(bot):
@@ -576,9 +576,9 @@ def parse_signal_angel(bot, channel):
 
     parts = [x.strip() for x in topic.split('|')]
     for part in parts:
-        if part.startswith('SA: '):
+        if part.startswith('Signal: '):
             logger.info('part: %s', part)
-            return part[4:]
+            return part[8:]
 
     return False
 
