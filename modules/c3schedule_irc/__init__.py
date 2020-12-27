@@ -17,9 +17,9 @@ from sopel.config.types import ValidatedAttribute
 logger = logging.getLogger(__name__)
 
 hall_channels = {
-    'rC1':  '#rC3-one',
-    'rC2':  '#rC3-two',
-    'chaosstudio-hamburg':   '#rc3-csh',
+    'rC1': '#rC3-one',
+    'rC2': '#rC3-two',
+    'chaosstudio-hamburg': '#rc3-csh',
     'restrealitaet': '#rC3-restrealitaet',
     'r3s - Monheim/Rhein': '#rc3-r3s',
     'franconiannet': '#rc3-franconiannet',
@@ -471,6 +471,11 @@ def clear_questions(bot, trigger):
     bot.reply('Questions cleared')
 
 
+def get_topic(bot, channel):
+    lowercase_channel_topics = dict((k.lower(), v.topic) for (k, v) in bot.channels.items())
+    return lowercase_channel_topics[channel]
+
+
 @sopel.module.commands('sa')
 @sopel.module.require_chanmsg()
 def become(bot, trigger):
@@ -497,7 +502,7 @@ def become(bot, trigger):
     bot.write(['MODE', channel, '+o', trigger.nick])
 
     if old_nick:
-        old_topic = bot.channels[channel].topic
+        old_topic = get_topic(bot, channel)
         topic = old_topic.replace('SA: {}'.format(old_nick),
                                   'SA: {}'.format(trigger.nick))
         set_topic(bot, channel, topic)
