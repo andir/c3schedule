@@ -49,7 +49,7 @@ class ScheduleConfigSection(StaticSection):
     topic_template = ValidatedAttribute('topic_template',
                                         default='{{acronym}} - {{title}} | {{start}} -> {{end}} | Day {{dayN}} | {{url}} | Query c3schedule with .help/.subscribe/.unsubscribe/.info/.schedule/.search/.nextup')
     channel_topic_template = ValidatedAttribute('channel_topic_template',
-            default='{{ "{" }}{{session.room[0]}}{{ "}" }}{{ session.room[1:] }} @ {{ session.date }} | ' +
+            default='{{ session.room }} @ {{ session.date }} | ' +
                     '{% if angel %}Signal: {{ angel }} | {% endif %}' +
                     '({{session.language}}) {{ session.title }} [{{ session.id }}] {% if session.url(bot) != "N/A" %}{{ session.url(bot) }}{% endif %} | ' +
                     '{% if stream_url %}Stream: {{ stream_url }}{% endif %}' +
