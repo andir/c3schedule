@@ -823,7 +823,7 @@ class Session:
     def from_json(cls, session_json):
         return cls(session_json['id'],
                    session_json['guid'],
-                   session_json['logo'],
+                   session_json.get('logo'),
                    parse_day(session_json['date']),
                    parse_duration(session_json['start']),
                    parse_duration(session_json['duration']),
