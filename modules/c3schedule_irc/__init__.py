@@ -838,7 +838,7 @@ class Session:
                    session_json['description'],
                    session_json.get('recording_license', ''),
                    session_json.get('do_not_record', False),
-                   [Person.from_json(p) for p in session_json['persons']],
+                   [Person.from_json(p) for p in session_json.get('persons', [])],
                    session_json.get('links', []),
                    session_json.get('attachments', []))
 
