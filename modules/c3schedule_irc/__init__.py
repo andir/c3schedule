@@ -389,6 +389,8 @@ def set_topic(bot, channel, topic):
 
 def hall_channel_from_str(arg):
     lower_hall_channels = dict((k.lower(), v) for (k,v) in hall_channels.items())
+    lower_hall_channels.update(dict((v.lower(), v) for v in hall_channels.values()))
+    lower_hall_channels.update(dict((v.lower().lstrip('#'), v) for v in hall_channels.values()))
 
     if not arg or (arg.lower() not in lower_hall_channels and arg not in hall_channels.values()):
         return None
@@ -508,8 +510,6 @@ def become(bot, trigger):
         set_topic(bot, channel, topic)
         bot.reply('topic updated in {}'.format(channel))
         #bot.write(['MODE', channel, '-o', old_nick])
-
-
     else:
         bot.reply('Topic does not have the | SA: <nick> | pattern?')
 
