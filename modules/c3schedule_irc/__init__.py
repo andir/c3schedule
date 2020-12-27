@@ -925,7 +925,7 @@ class Session:
 
     def url(self, bot):
         if self.track != 'self organized sessions':
-            return render_jinja(bot.config.c3schedule.session_url, year=self.date.year, id=self.id, type=self.type, title=self.title, slug=self.slug, links=self.links)
+            return render_jinja(bot.config.c3schedule.session_url, year=self.date.year, id=self.id, type=self.type, title=self.title, slug=self.slug, links=self.links, guid=self.guid)
         else:
             if len(self.links) == 0:
                 return 'N/A'
