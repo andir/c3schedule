@@ -26,7 +26,7 @@ hall_channels = {
     'Chaos-West TV': '#rc3-cwtv',
     'hacc München / about:future': '#rc3-hacc',
     'xHain Berlin': '#rc3-xhain',
-    #    'c-base Berlin': '#rc3-', # :'(
+    'c-base Berlin': '#rc3-cbase',
     'ChaosTrawler': '#rc3-chaostrawler',
     'ChaosZone TV Stream': '#rc3-chaoszone',
     'ChaosZone Workshops': '#rc3-chaoszone',
