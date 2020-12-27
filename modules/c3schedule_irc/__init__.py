@@ -880,6 +880,8 @@ class Session:
         suffix_template = bot.config.c3schedule.channel_topic_suffix
         stream_url_template = bot.config.c3schedule.stream_url_template
         stream_hall = {
+                "rC1": "one",
+                "rC2": "two",
                 "OIO/A:F Bühne": "oio",
                 "XHain Berlin": "xhain",
                 "Wikipaka Meetups": "wikipaka",
