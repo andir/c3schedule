@@ -473,7 +473,7 @@ def clear_questions(bot, trigger):
 
 def get_topic(bot, channel):
     lowercase_channel_topics = dict((k.lower(), v.topic) for (k, v) in bot.channels.items())
-    return lowercase_channel_topics[channel]
+    return lowercase_channel_topics[channel.lower()]
 
 
 @sopel.module.commands('sa')
@@ -572,7 +572,7 @@ def announce_scheduled_start(bot, session):
 
 
 def parse_signal_angel(bot, channel):
-    topic = bot.channels[channel].topic
+    topic = get_topic(bot, channel)
 
     parts = [ x.strip() for x in topic.split('|') ]
     for part in parts:
@@ -616,7 +616,7 @@ def update_topic(bot):
     )
 
     try:
-        current_topic = bot.channels[bot.config.c3schedule.channel].topic
+        current_topic = get_topic(bot, bot.config.c3schedule.channel)
     except KeyError:
         logger.info("topic of %s not yet known. Retrying in 15s.", bot.config.c3schedule.channel)
     else:
