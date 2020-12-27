@@ -881,6 +881,13 @@ class Session:
         stream_url_template = bot.config.c3schedule.stream_url_template
         stream_hall = {
                 "OIO/A:F Bühne": "oio",
+                "XHain Berlin": "xhain",
+                "Wikipaka Meetups": "wikipaka",
+                "r3s - Monheim/Rhein": "r3s",
+                "hacc München / about:future": "hacc",
+                "Chaos-West TV": "cwtv",
+                "ChaosZone TV": "chaoszone",
+                "Bitwäscherei Zürich": "bitwaescherei",
         }.get(self.room, self.room)
         logger.info('Room: %s Stream Hall: %s', self.room, stream_hall)
         kwargs = dict(session=self, angel=angel, bot=bot, stream_hall=stream_hall)
