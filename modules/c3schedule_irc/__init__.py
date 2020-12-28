@@ -22,6 +22,7 @@ hall_channels = {
     'chaosstudio-hamburg': '#rc3-csh',
     'restrealitaet': '#rC3-restrealitaet',
     'r3s - Monheim/Rhein': '#rc3-r3s',
+    'franconian.net': '#rc3-franconiannet',
     'franconiannet': '#rc3-franconiannet',
     'Chaos-West TV': '#rc3-cwtv',
     'hacc München / about:future': '#rc3-hacc',
