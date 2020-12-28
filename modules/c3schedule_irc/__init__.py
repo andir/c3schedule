@@ -893,6 +893,7 @@ class Session:
                 "ChaosZone TV": "chaoszone",
                 "Bitwäscherei Zürich": "bitwaescherei",
                 "SZ Bühne": "sendezentrum",
+                "franconian.net": "franconiannet",
         }.get(self.room, self.room)
         logger.info('Room: %s Stream Hall: %s', self.room, stream_hall)
         kwargs = dict(session=self, angel=angel, bot=bot, stream_hall=stream_hall)
