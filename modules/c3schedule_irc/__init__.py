@@ -888,9 +888,10 @@ class Session:
                 "r3s - Monheim/Rhein": "r3s",
                 "hacc München / about:future": "hacc",
                 "Chaos-West TV": "cwtv",
+                "ChaosZone TV Stream": "chaoszone",
                 "ChaosZone TV": "chaoszone",
                 "Bitwäscherei Zürich": "bitwaescherei",
-                "SZ Bühne": "Sendezentrum",
+                "SZ Bühne": "sendezentrum",
         }.get(self.room, self.room)
         logger.info('Room: %s Stream Hall: %s', self.room, stream_hall)
         kwargs = dict(session=self, angel=angel, bot=bot, stream_hall=stream_hall)
