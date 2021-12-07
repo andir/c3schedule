@@ -479,7 +479,7 @@ def get_topic(bot, channel):
     return lowercase_channel_topics[channel.lower()]
 
 
-@sopel.module.commands('sa')
+@sopel.module.commands('signal')
 @sopel.module.require_chanmsg()
 def become(bot, trigger):
     channel = trigger.sender
