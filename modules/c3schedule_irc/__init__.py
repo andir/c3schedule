@@ -17,26 +17,14 @@ from sopel.config.types import ValidatedAttribute
 logger = logging.getLogger(__name__)
 
 hall_channels = {
-    'rC1': '#rC3-one',
-    'rC2': '#rC3-two',
-    'chaosstudio-hamburg': '#rc3-csh',
-    'restrealitaet': '#rC3-restrealitaet',
-    'r3s - Monheim/Rhein': '#rc3-r3s',
-    'franconian.net': '#rc3-franconiannet',
-    'franconiannet': '#rc3-franconiannet',
+    'Chaosstudio Hamburg': '#rc3-chaosstudio-hamburg',
     'Chaos-West TV': '#rc3-cwtv',
-    'hacc München / about:future': '#rc3-hacc',
-    'xHain Berlin': '#rc3-xhain',
-    'c-base Berlin': '#rc3-cbase',
-    'ChaosTrawler': '#rc3-chaostrawler',
-    'ChaosZone TV Stream': '#rc3-chaoszone',
-    'ChaosZone Workshops': '#rc3-chaoszone',
-    'OIO/A:F Bühne': '#rc3-oio',
-    'OIO/A:F Workshop': '#rc3-oio',
-    'SZ Bühne': '#rc3-sendezentrum',
-    'Wikipaka': '#rc3-wikipaka',
-    'Wikipaka Meetups': '#rc3-wikipaka',
-    'Bitwäscherei Zürich': '#rc3-bitwaescherei',
+    'ChaosZone TV': '#rc3-chaoszone',
+    'c-base': '#rc3-cbase',
+    'r3s - Monheim/Rhein': '#rc3-r3s',
+    'franconian.net': '#rc3-franoniannet',
+    'about:future stage': '#rc3-aboutfuture',
+    'Lichtung': '#rc3-xhain',
 }
 
 pendulum.set_to_string_format('%d.%m. %H:%M')
