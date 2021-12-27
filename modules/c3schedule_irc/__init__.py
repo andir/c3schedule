@@ -22,7 +22,7 @@ hall_channels = {
     'ChaosZone TV': '#rc3-chaoszone',
     'c-base': '#rc3-cbase',
     'r3s - Monheim/Rhein': '#rc3-r3s',
-    'franconian.net': '#rc3-franoniannet',
+    'franconian.net': '#rc3-franconiannet',
     'about:future stage': '#rc3-aboutfuture',
     'Lichtung': '#rc3-xhain',
 }
